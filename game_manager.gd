@@ -34,36 +34,20 @@ func change_scene_with_loading(scene_path: String):
 	if is_game_paused:
 		toggle_pause()
 
-	# Instance the loading screen
+	# Create a new loading screen scene
 	var loading_screen = loading_screen_scene.instantiate()
 
-	# Add it to the current scene
-	current_scene.add_child(loading_screen)
+	# Add it directly to the root
+	get_tree().root.add_child(loading_screen)
 
 	# Start loading the new scene
 	loading_screen.load_scene(scene_path)
 
 # Change to a different scene immediately (without loading screen)
 func change_scene(scene_path: String):
-	# This function will be called when changing scenes
-	call_deferred("_deferred_change_scene", scene_path)
-
-func _deferred_change_scene(scene_path: String):
 	# Unpause the game if it was paused
 	if is_game_paused:
 		toggle_pause()
 
-	# Free the current scene
-	current_scene.free()
-
-	# Load the new scene
-	var new_scene = load(scene_path)
-
-	# Instance the new scene
-	current_scene = new_scene.instantiate()
-
-	# Add it to the active scene, as child of root
-	get_tree().root.add_child(current_scene)
-
-	# Optionally, set it as the current scene (not necessary for Godot 4)
-	get_tree().current_scene = current_scene
+	# Use Godot's built-in scene changer
+	get_tree().change_scene_to_file(scene_path)

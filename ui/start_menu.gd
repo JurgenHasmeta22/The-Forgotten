@@ -14,5 +14,5 @@ func _input(event):
 		_on_start_button_pressed()
 
 func _on_start_button_pressed():
-	# Show loading screen and change to the main game scene
+	# Change to the main game scene with loading screen
 	GameManager.change_scene_with_loading("res://demo_level/world_castle.tscn")

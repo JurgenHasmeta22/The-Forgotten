@@ -14,66 +14,63 @@ var tips = [
 
 var target_scene = ""
 var progress = 0.0
+var loading_done = false
 
 func _ready():
-	# Hide the loading screen initially
-	hide()
-
 	# Show a random tip
 	randomize()
 	tip_label.text = tips[randi() % tips.size()]
 
-func load_scene(scene_path):
+	# Make sure we're visible
 	show()
-	target_scene = scene_path
-	progress = 0.0
-	progress_bar.value = 0.0
 
-	# Create a ResourceLoader to load the scene in the background
+	# Set up progress bar
+	progress_bar.value = 0
+
+func load_scene(scene_path):
+	target_scene = scene_path
+
+	# Start the loading process
 	var loader = ResourceLoader.load_threaded_request(target_scene)
 
-	# Start a timer to check the loading progress
+	# Create a timer to check progress
 	var timer = Timer.new()
 	timer.wait_time = 0.1
 	timer.one_shot = false
-	timer.timeout.connect(_check_loading_progress.bind(loader))
+	timer.timeout.connect(_check_loading_progress)
 	add_child(timer)
 	timer.start()
 
-func _check_loading_progress(loader):
+func _check_loading_progress():
 	var status = ResourceLoader.load_threaded_get_status(target_scene)
 
 	if status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
-		# Still loading, update the progress bar
-		progress = ResourceLoader.load_threaded_get_status(target_scene, [])
-		progress_bar.value = progress
+		# Update progress bar
+		var array = []
+		progress = ResourceLoader.load_threaded_get_status(target_scene, array)
+		if array.size() > 0:
+			progress = float(array[0])
+		progress_bar.value = progress * 100
 
 	elif status == ResourceLoader.THREAD_LOAD_LOADED:
-		# Loading complete, get the loaded resource
+		progress_bar.value = 100
+		loading_done = true
+
+		# Wait a moment at 100% before changing scenes
+		await get_tree().create_timer(0.5).timeout
+
+		# Get the loaded resource
 		var resource = ResourceLoader.load_threaded_get(target_scene)
 
-		# Instance the loaded scene
-		var new_scene = resource.instantiate()
+		# Change to the new scene
+		get_tree().change_scene_to_packed(resource)
 
-		# Add it to the tree
-		get_tree().root.add_child(new_scene)
-
-		# Set it as the current scene
-		get_tree().current_scene = new_scene
-
-		# Remove the old scene (which is the parent of this loading screen)
-		var old_scene = get_parent()
-		old_scene.queue_free()
-
-		# Hide the loading screen
-		hide()
-
-		# Update the GameManager's current_scene reference
-		GameManager.current_scene = new_scene
+		# Remove ourselves
+		queue_free()
 
 	elif status == ResourceLoader.THREAD_LOAD_FAILED:
-		# Loading failed
 		push_error("Failed to load scene: " + target_scene)
 
-		# Hide the loading screen
-		hide()
+		# Go back to start menu as fallback
+		get_tree().change_scene_to_file("res://ui/start_menu.tscn")
+		queue_free()
