@@ -17,32 +17,40 @@ func _ready():
 	enemy.hurt_started.connect(_on_hurt_started)
 	enemy.parried_started.connect(_on_parried_started)
 	enemy.death_started.connect(_on_death_started)
-	
+
 	animation_started.connect(_on_animation_started)
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
+	# Don't process movement if enemy is dead
+	if enemy.is_dead:
+		return
+
 	set_movement()
 
 func set_movement():
 	var speed : Vector2 = Vector2.ZERO
 	var near
-	#if enemy.current_state:
-	match enemy.current_state:
-		enemy.state.FREE:
-			near = (enemy.target.global_position.distance_to(enemy.global_position) < .2)
-			if near:
+
+	# Skip movement processing if enemy is dead
+	if enemy.is_dead or enemy.current_state == enemy.state.DEAD:
+		speed.y = 0.0
+	else:
+		match enemy.current_state:
+			enemy.state.FREE:
+				near = (enemy.target.global_position.distance_to(enemy.global_position) < .2)
+				if near:
+					speed.y = 0.0
+				else:
+					speed.y = .5
+			enemy.state.CHASE:
+				near = (enemy.target.global_position.distance_to(enemy.global_position) < 4.0)
+				if near:
+					speed.y = .5
+				else:
+					speed.y = 1.0
+			enemy.state.DEAD:
 				speed.y = 0.0
-			else:
-				speed.y = .5
-		enemy.state.CHASE:
-			near = (enemy.target.global_position.distance_to(enemy.global_position) < 4.0)
-			if near:
-				speed.y = .5
-			else:
-				speed.y = 1.0
-		enemy.state.DEAD:
-			speed.y = 0.0
-			
+
 	var blend = lerp(get("parameters/Movement/Movement2D/blend_position"),speed,.1)
 	set("parameters/Movement/Movement2D/blend_position",blend)
 
@@ -68,10 +76,12 @@ func _on_hurt_started():
 func _on_parried_started():
 	abort_oneshot(last_oneshot)
 	request_oneshot("parried")
-	
+
 func _on_death_started():
-	abort_oneshot(last_oneshot)
-	state_machine_node.travel("Dead")
+	# Only play death animation if not already in Dead state
+	if state_machine_node.get_current_node() != "Dead":
+		abort_oneshot(last_oneshot)
+		state_machine_node.travel("Dead")
 
 func _on_animation_started(anim_name):
 	anim_length = get_node(anim_player).get_animation(anim_name).length

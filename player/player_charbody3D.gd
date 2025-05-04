@@ -521,16 +521,28 @@ func death():
 	if is_dead:
 		return  # Prevent death function from running multiple times
 
-	current_state = state.STATIC
-	hurt_cool_down.start(10)
+	# Set dead state immediately
 	is_dead = true
+	current_state = state.STATIC
+
+	# Disable physics processing and input
+	set_physics_process(false)
+	set_process_input(false)
+
+	# Freeze the character in place
+	velocity = Vector3.ZERO
+
+	# Emit death signal for UI and animations
 	death_started.emit()
 
 	# Use a one-shot timer to reload the scene
 	var reload_timer = Timer.new()
 	reload_timer.one_shot = true
 	reload_timer.wait_time = 3.0
-	reload_timer.timeout.connect(func(): get_tree().reload_current_scene())
+	reload_timer.timeout.connect(func():
+		# This will be called when the timer expires
+		get_tree().reload_current_scene()
+	)
 	add_child(reload_timer)
 	reload_timer.start()
 
