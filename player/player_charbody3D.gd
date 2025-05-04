@@ -1,7 +1,7 @@
 extends CharacterBody3D
 
-@onready var sensor_cast : ShapeCast3D
-@export var animation_tree : AnimationTree
+@onready var sensor_cast: ShapeCast3D
+@export var animation_tree: AnimationTree
 @onready var anim_length = .5 # updates as new animnations start
 signal event_finished
 ## default/1st camera is a follow cam.
@@ -13,7 +13,7 @@ signal event_finished
 
 ## Interactables that update based on entering a Ladder Area or, the sensor_cast
 ## colliding with an interactable.
-@onready var interactable : Node3D
+@onready var interactable: Node3D
 @onready var ladder
 signal climb_started
 signal interact_started(interact_type)
@@ -21,13 +21,13 @@ signal interact_started(interact_type)
 ## A generic EquipmentSystem class, used to manage moving Weapons 
 ## between a hand and sheathed location as well as activating collision hitbox 
 ## monitoring and reporting hits have happened. Very handy.
-@export var weapon_system : EquipmentSystem
+@export var weapon_system: EquipmentSystem
 
 ## A helper variable, tracks the current weapon type for easier referencing from
 ## the animation_tree and anywhere else that may want to know what weapon type is held.
-var weapon_type :String = "SLASH"
+var weapon_type: String = "SLASH"
 signal weapon_change_started ## to start the animation
-signal weapon_change_ended(weapon_type:String) ## informing the change is complete
+signal weapon_change_ended(weapon_type: String) ## informing the change is complete
 signal attack_started ## to start the animation
 
 
@@ -38,12 +38,12 @@ var secondary_action
 
 ## Gadgets and guarding equipment system that manages moving nodes from the 
 ## off-hand, to their hip location, the same EquipmentSystem as the weapon system.
-@export var gadget_system : EquipmentSystem
+@export var gadget_system: EquipmentSystem
 ## A helper variable, tracks the current gadget type for easier referencing from
 ## the AnimationStateTree or anywhere else that may need to know what gadget type is held.
-var gadget_type :String = "SHIELD"
+var gadget_type: String = "SHIELD"
 signal gadget_change_started ## to start the animation
-signal gadget_change_ended(gadget_type:String) ## to end the animation
+signal gadget_change_ended(gadget_type: String) ## to end the animation
 signal gadget_started ## when the gadget attack starts
 
 
@@ -60,18 +60,18 @@ signal parry_started
 signal block_started
 
 ## The HealthSystem node that will take in information about damage and healing received.
-@export var health_system : HealthSystem
+@export var health_system: HealthSystem
 @onready var hurt_cool_down = Timer.new() # while running, player can't be hurt
 signal hurt_started # to start the animation
-signal damage_taken(by_what:EquipmentObject) # to indicate the damage value
-signal health_received(by_what:ItemObject)
+signal damage_taken(by_what: EquipmentObject) # to indicate the damage value
+signal health_received(by_what: ItemObject)
 signal death_started
-var is_dead :bool = false
+var is_dead: bool = false
 
-@export var inventory_system : InventorySystem
-var current_item : ItemResource
+@export var inventory_system: InventorySystem
+var current_item: ItemResource
 signal item_change_started
-signal item_change_ended(current_item:ItemObject)
+signal item_change_ended(current_item: ItemObject)
 signal use_item_started
 signal item_used
 
@@ -79,41 +79,41 @@ signal item_used
 var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 @export var jump_velocity = 4.5
 @onready var last_altitude = global_position
-@export var hard_landing_height :float = 4 # how far they can fall before 'hard landing'
-signal landed_fall(hard_or_soft:String)
+@export var hard_landing_height: float = 4 # how far they can fall before 'hard landing'
+signal landed_fall(hard_or_soft: String)
 signal jump_started
 
 ## Dodge and Sprint Mechanics.
-@onready var sprint_timer :Timer = Timer.new()
+@onready var sprint_timer: Timer = Timer.new()
 signal dodge_started
 signal sprint_started
 
 # Movement Mechanics
-var input_dir : Vector2
+var input_dir: Vector2
 @export var default_speed = 4.0
 @onready var speed = default_speed
 
 
 # Strafing
-var strafing :bool = false # substate
+var strafing: bool = false # substate
 @onready var strafe_cross_product = 0.0
 @onready var move_dot_product = 0.0
-signal strafe_toggled(toggle:bool)
+signal strafe_toggled(toggle: bool)
 
 # Laddering
-signal ladder_started(top_or_bottom:String)
-signal ladder_finished(top_or_bottom:String)
+signal ladder_started(top_or_bottom: String)
+signal ladder_finished(top_or_bottom: String)
 
 # State management
-enum state {FREE,STATIC,CLIMB}
+enum state {FREE, STATIC, CLIMB}
 
-@onready var busy : bool = false # substate: to prevent input spamming
+@onready var busy: bool = false # substate: to prevent input spamming
 @onready var guarding = false # substate
-@onready var sprinting : bool = false # substate
-@onready var dodging : bool = false # substate
-@onready var slowed : bool = false # substate:  force a slower walking speed
+@onready var sprinting: bool = false # substate
+@onready var dodging: bool = false # substate
+@onready var slowed: bool = false # substate:  force a slower walking speed
 
-@onready var current_state = state.STATIC : set = change_state
+@onready var current_state = state.STATIC: set = change_state
 signal changed_state(new_state: state)
 
 func _ready():
@@ -164,11 +164,11 @@ func change_state(new_state):
 			velocity = Vector3.ZERO
 	
 	if current_state == state.CLIMB:
-		system_visible(weapon_system,false)
-		system_visible(gadget_system,false)
+		system_visible(weapon_system, false)
+		system_visible(gadget_system, false)
 	else:
-		system_visible(weapon_system,true)
-		system_visible(gadget_system,true)
+		system_visible(weapon_system, true)
+		system_visible(gadget_system, true)
 			
 func _physics_process(_delta):
 	match current_state:
@@ -183,7 +183,7 @@ func _physics_process(_delta):
 	apply_gravity(_delta)
 	fall_check()
 	
-func _input(_event:InputEvent):
+func _input(_event: InputEvent):
 		# Update current orientation to camera when nothing pressed
 	if !Input.is_anything_pressed():
 		current_camera = get_viewport().get_camera_3d()
@@ -227,7 +227,7 @@ func _input(_event:InputEvent):
 			elif _event.is_action_pressed("change_secondary"):
 				gadget_change()
 
-			elif _event.is_action_pressed("use_gadget_strong"): 
+			elif _event.is_action_pressed("use_gadget_strong"):
 				use_gadget()
 					
 			elif _event.is_action_pressed("use_gadget_light"):
@@ -238,7 +238,7 @@ func _input(_event:InputEvent):
 			
 			elif _event.is_action_pressed("change_item"):
 				item_change()
-			elif _event.is_action_pressed("use_item"): 
+			elif _event.is_action_pressed("use_item"):
 				use_item()
 	
 	elif current_state == state.CLIMB:
@@ -247,7 +247,6 @@ func _input(_event:InputEvent):
 				abort_climb()
 	
 	if sprinting:
-		
 		if !input_dir:
 			end_sprint()
 		
@@ -278,8 +277,8 @@ func rotate_player():
 		global_transform.basis = Basis(target_rotation)
 		var new_direction = calc_direction().normalized()
 		
-		var forward_vector = global_transform.basis.z.normalized() 
-		strafe_cross_product = -forward_vector.cross(new_direction).y
+		var forward_vector = global_transform.basis.z.normalized()
+		strafe_cross_product = - forward_vector.cross(new_direction).y
 		move_dot_product = forward_vector.dot(new_direction)
 		return
 	
@@ -313,8 +312,7 @@ func fall_check():
 	## When you land again, compare the distances of both location y values, if greater
 	## than the hard_landing_height, then trigger a hard landing. Otherwise, 
 	## clear the last_altitude variable.
-
-	if !is_on_floor() && last_altitude == null: 
+	if !is_on_floor() && last_altitude == null:
 		last_altitude = global_position
 	if is_on_floor() && last_altitude != null:
 		var fall_distance = abs(last_altitude.y - global_position.y)
@@ -334,7 +332,7 @@ func end_sprint():
 	sprinting = false
 		
 	
-func dodge(): 
+func dodge():
 	if dodging:
 		return
 		
@@ -345,7 +343,7 @@ func dodge():
 	dodge_started.emit()
 	if animation_tree:
 		await animation_tree.animation_measured
-	hurt_cool_down.start(anim_length*.7)
+	hurt_cool_down.start(anim_length * .7)
 	await get_tree().create_timer(anim_length).timeout
 	
 	strafing = strafe_status
@@ -380,10 +378,10 @@ func weapon_change():
 	weapon_change_ended.emit(weapon_type)
 	slowed = false
 	
-func _on_weapon_equipment_changed(_new_weapon:EquipmentObject):
+func _on_weapon_equipment_changed(_new_weapon: EquipmentObject):
 	weapon_type = _new_weapon.equipment_info.object_type
 
-func _on_gadget_equipment_changed(_new_gadget:EquipmentObject):
+func _on_gadget_equipment_changed(_new_gadget: EquipmentObject):
 	gadget_type = _new_gadget.equipment_info.object_type
 
 func _on_inventory_item_used(_item):
@@ -395,7 +393,7 @@ func gadget_change():
 	await event_finished
 	print(gadget_type)
 	gadget_change_ended.emit(gadget_type)
-	await get_tree().create_timer(anim_length *.5).timeout
+	await get_tree().create_timer(anim_length * .5).timeout
 	slowed = false
 
 func item_change():
@@ -473,11 +471,11 @@ func death():
 	await get_tree().create_timer(3).timeout
 	get_tree().reload_current_scene()
 		
-func system_visible(_system_node,_new_toggle):
+func system_visible(_system_node, _new_toggle):
 		if _system_node:
 			_system_node.visible = _new_toggle
 
-func trigger_interact(interact_type:String):
+func trigger_interact(interact_type: String):
 	if busy:
 		return
 	busy = true
@@ -486,7 +484,7 @@ func trigger_interact(interact_type:String):
 	await get_tree().create_timer(anim_length).timeout
 	busy = false
 		
-func trigger_event(signal_name:String):
+func trigger_event(signal_name: String):
 	if busy or dodging:
 		return
 	busy = true
@@ -505,9 +503,9 @@ func jump():
 		velocity.y = jump_velocity
 
 func set_root_move(delta):
-	input_dir = Input.get_vector("move_left","move_right","move_up","move_down")
+	input_dir = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	#set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
-	var rate : float # imiates directional change acceleration rate
+	var rate: float # imiates directional change acceleration rate
 	if is_on_floor():
 		rate = .5
 	else:
@@ -524,7 +522,7 @@ func set_root_move(delta):
 
 	
 func set_root_climb(delta):
-	input_dir = Input.get_vector("move_left","move_right","move_up","move_down")
+	input_dir = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	
 	var rate = 2
 	var new_velocity = get_quaternion() * animation_tree.get_root_motion_rotation() * animation_tree.get_root_motion_position() / delta
@@ -542,13 +540,13 @@ func set_root_climb(delta):
 		dismount_pos.y += .5
 		var tween = create_tween()
 
-		tween.tween_property(self,"global_position",dismount_pos,.3)
+		tween.tween_property(self, "global_position", dismount_pos, .3)
 	if is_on_floor():
 		current_state = state.FREE
 		#free_started.emit()
 	
 		
-func calc_direction() -> Vector3 :
+func calc_direction() -> Vector3:
 	var new_direction = (current_camera.global_transform.basis.z * input_dir.y + \
 	current_camera.global_transform.basis.x * input_dir.x)
 	return new_direction
