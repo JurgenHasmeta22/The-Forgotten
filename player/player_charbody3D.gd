@@ -26,7 +26,7 @@ signal interact_started(interact_type)
 ## A helper variable, tracks the current weapon type for easier referencing from
 ## the animation_tree and anywhere else that may want to know what weapon type is held.
 var weapon_type: String = "SLASH"
-# signal weapon_change_started ## to start the animation
+signal weapon_change_started ## to start the animation
 signal weapon_change_ended(weapon_type: String) ## informing the change is complete
 signal attack_started ## to start the animation
 
@@ -42,9 +42,9 @@ var secondary_action
 ## A helper variable, tracks the current gadget type for easier referencing from
 ## the AnimationStateTree or anywhere else that may need to know what gadget type is held.
 var gadget_type: String = "SHIELD"
-# signal gadget_change_started ## to start the animation
+signal gadget_change_started ## to start the animation
 signal gadget_change_ended(gadget_type: String) ## to end the animation
-# signal gadget_started ## when the gadget attack starts
+signal gadget_started ## when the gadget attack starts
 
 
 ## When guarding this substate is true. Drives animation and hitbox logic for blocking.
@@ -71,11 +71,11 @@ var is_dead: bool = false
 ## The StaminaSystem node that will manage stamina for actions like running, attacking, and dodging.
 @export var stamina_system: StaminaSystem
 signal stamina_depleted # emitted when player runs out of stamina
-# signal stamina_restored # emitted when stamina is fully restored
+signal stamina_restored # emitted when stamina is fully restored
 
 @export var inventory_system: InventorySystem
 var current_item: ItemResource
-# signal item_change_started
+signal item_change_started
 signal item_change_ended(current_item: ItemObject)
 signal use_item_started
 signal item_used
@@ -85,7 +85,7 @@ var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 @export var jump_velocity = 4.5
 @onready var last_altitude = global_position
 @export var hard_landing_height: float = 4 # how far they can fall before 'hard landing'
-# signal landed_fall(hard_or_soft: String)
+signal landed_fall(hard_or_soft: String)
 signal jump_started
 
 ## Dodge and Sprint Mechanics.
@@ -106,8 +106,8 @@ var strafing: bool = false # substate
 signal strafe_toggled(toggle: bool)
 
 # Laddering
-# signal ladder_started(top_or_bottom: String)
-# signal ladder_finished(top_or_bottom: String)
+signal ladder_started(top_or_bottom: String)
+signal ladder_finished(top_or_bottom: String)
 
 # State management
 enum state {FREE, STATIC, CLIMB}
