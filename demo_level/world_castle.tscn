@@ -152,16 +152,16 @@ transform = Transform3D(-0.276267, 0.0119823, 0.961006, 0.0237746, 0.999701, -0.
 default_target = NodePath("../PatrolPath/EnemyPatrolPoint")
 
 [node name="EnemyBase2" parent="Enemies" instance=ExtResource("15_yac72")]
-transform = Transform3D(-0.43892, 0, 0.898526, 0, 1, 0, -0.898526, 0, -0.43892, -1.23949, 0.0303401, 26.5234)
+transform = Transform3D(-0.43892, 0, 0.898526, 0, 1, 0, -0.898526, 0, -0.43892, -1.23949, 0.0492474, 26.5234)
 
 [node name="EnemyBase11" parent="Enemies" instance=ExtResource("15_yac72")]
-transform = Transform3D(0.058644, 0, -0.998279, 0, 1, 0, 0.998279, 0, 0.058644, 2.95918, -0.142621, 26.1103)
+transform = Transform3D(0.058644, 0, -0.998279, 0, 1, 0, 0.998279, 0, 0.058644, 2.95918, 0.178931, 26.1103)
 
 [node name="EnemyBase12" parent="Enemies" instance=ExtResource("15_yac72")]
-transform = Transform3D(-0.0279918, 0, -0.999609, 0, 1, 0, 0.999609, 0, -0.0279918, 2.97632, -0.406419, 22.6355)
+transform = Transform3D(-0.0279918, 0, -0.999609, 0, 1, 0, 0.999609, 0, -0.0279918, 2.83303, 0.122027, 22.518)
 
 [node name="EnemyBase10" parent="Enemies" instance=ExtResource("15_yac72")]
-transform = Transform3D(2.98023e-08, 0, 1, 0, 1, 0, -1, 0, 2.98023e-08, -1.05928, 0.0619049, 22.407)
+transform = Transform3D(2.98023e-08, 0, 1, 0, 1, 0, -1, 0, 2.98023e-08, -1.05928, 0.137161, 22.407)
 
 [node name="EnemyBase3" parent="Enemies" instance=ExtResource("15_yac72")]
 transform = Transform3D(-0.518131, 0, 0.855301, 0, 1, 0, -0.855301, 0, -0.518131, -35.0243, 3.8271, 16.6354)
