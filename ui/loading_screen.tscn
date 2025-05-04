@@ -1,0 +1,69 @@
+[gd_scene load_steps=5 format=3 uid="uid://bibclmnboeyw6"]
+
+[ext_resource type="Script" path="res://ui/loading_screen.gd" id="1_ixnqm"]
+
+[sub_resource type="Gradient" id="Gradient_yvnqw"]
+colors = PackedColorArray(0.0627451, 0.0784314, 0.101961, 1, 0.133333, 0.164706, 0.211765, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_yvnqw"]
+gradient = SubResource("Gradient_yvnqw")
+fill_to = Vector2(0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yvnqw"]
+bg_color = Color(0.278431, 0.54902, 0.74902, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="LoadingScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ixnqm")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture2D_yvnqw")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -50.0
+offset_right = 200.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="LoadingLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.278431, 0.54902, 0.74902, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.5)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 32
+text = "Loading..."
+horizontal_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="VBoxContainer"]
+custom_minimum_size = Vector2(400, 20)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_yvnqw")
+max_value = 1.0
+value = 0.5
+show_percentage = false
