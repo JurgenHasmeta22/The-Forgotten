@@ -535,13 +535,18 @@ func death():
 	# Emit death signal for UI and animations
 	death_started.emit()
 
-	# Use a one-shot timer to reload the scene
+	# Use a one-shot timer to respawn at the last bonfire
 	var reload_timer = Timer.new()
 	reload_timer.one_shot = true
 	reload_timer.wait_time = 3.0
 	reload_timer.timeout.connect(func():
 		# This will be called when the timer expires
-		get_tree().reload_current_scene()
+		if SaveSystem.last_bonfire_scene.is_empty():
+			# If no bonfire has been visited, just reload the current scene
+			get_tree().reload_current_scene()
+		else:
+			# Respawn at the last bonfire
+			SaveSystem.respawn_at_last_bonfire()
 	)
 	add_child(reload_timer)
 	reload_timer.start()

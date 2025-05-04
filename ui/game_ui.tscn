@@ -1,9 +1,12 @@
-[gd_scene load_steps=2 format=3 uid="uid://dqnvv5qpxq5yd"]
+[gd_scene load_steps=3 format=3 uid="uid://dqnvv5qpxq5yd"]
 
 [ext_resource type="PackedScene" uid="uid://c8yvxw3judnqm" path="res://ui/pause_menu.tscn" id="1_ixnqm"]
+[ext_resource type="PackedScene" uid="uid://c8yvxw3judnqm" path="res://ui/save_indicator.tscn" id="2_ixnqm"]
 
 [node name="GameUI" type="CanvasLayer"]
 layer = 10
 
 [node name="PauseMenu" parent="." instance=ExtResource("1_ixnqm")]
 visible = false
+
+[node name="SaveIndicator" parent="." instance=ExtResource("2_ixnqm")]

@@ -178,14 +178,29 @@ transform = Transform3D(-0.0711676, -0.0380913, 0.996737, -0.00271284, 0.999274,
 [node name="EnemyBase5" parent="Enemies" instance=ExtResource("15_yac72")]
 transform = Transform3D(-0.143493, 0, 0.989651, 0, 1, 0, -0.989651, 0, -0.143493, -45.5802, 3.8271, 13.8269)
 
+[node name="EnemyBase22" parent="Enemies" instance=ExtResource("15_yac72")]
+transform = Transform3D(-0.143493, 0, 0.989651, 0, 1, 0, -0.989651, 0, -0.143493, -45.5802, 3.8271, 11.0528)
+
 [node name="EnemyBase17" parent="Enemies" instance=ExtResource("15_yac72")]
-transform = Transform3D(0.0330678, 0, 0.999453, 0, 1, 0, -0.999453, 0, 0.0330678, -45.5802, 3.8271, 17.1438)
+transform = Transform3D(0.0330678, 0, 0.999453, 0, 1, 0, -0.999453, 0, 0.0330678, -45.5802, 3.8271, 19.3015)
+
+[node name="EnemyBase20" parent="Enemies" instance=ExtResource("15_yac72")]
+transform = Transform3D(0.0330678, 0, 0.999453, 0, 1, 0, -0.999453, 0, 0.0330678, -45.5802, 3.8271, 16.5323)
+
+[node name="EnemyBase21" parent="Enemies" instance=ExtResource("15_yac72")]
+transform = Transform3D(0.0330678, 0, 0.999453, 0, 1, 0, -0.999453, 0, 0.0330678, -45.5802, 3.8271, 21.7533)
 
 [node name="EnemyBase6" parent="Enemies" instance=ExtResource("15_yac72")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34.0326, 9, 10.6311)
 
 [node name="EnemyBase7" parent="Enemies" instance=ExtResource("15_yac72")]
-transform = Transform3D(-0.997653, 0, 0.068468, 0, 1, 0, -0.068468, 0, -0.997653, -27.273, 0, 21.48)
+transform = Transform3D(-0.0507586, 0.122248, 0.991201, 0.130756, 0.984751, -0.114757, -0.990114, 0.123781, -0.0659693, -27.273, 0, 17.6562)
+
+[node name="EnemyBase18" parent="Enemies" instance=ExtResource("15_yac72")]
+transform = Transform3D(-0.551457, 0, 0.834203, 0, 1, 0, -0.834203, 0, -0.551457, -25.697, 0, 21.48)
+
+[node name="EnemyBase19" parent="Enemies" instance=ExtResource("15_yac72")]
+transform = Transform3D(0.233819, 0, 0.97228, 0, 1, 0, -0.97228, 0, 0.233819, -25.697, 0, 14.8777)
 
 [node name="EnemyBase8" parent="Enemies" node_paths=PackedStringArray("default_target") instance=ExtResource("15_yac72")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36.7816, 14, 0.487746)

@@ -13,6 +13,7 @@ extends StaticBody3D
 @onready var audio_stream_player = $AudioStreamPlayer
 @onready var flame_particles = $FlameParticles
 @onready var interact_type = "SPAWN"
+@export var is_bonfire: bool = true  # Whether this spawn site acts as a bonfire (save point)
 
 
 func _ready():
@@ -20,12 +21,27 @@ func _ready():
 	collision_layer = 9
 
 func activate(player: CharacterBody3D):
-	
+	# Set this as the last bonfire if it's a bonfire
+	if is_bonfire:
+		SaveSystem.set_last_bonfire(global_position)
+
+		# Heal the player when they rest at a bonfire
+		if player.health_system:
+			player.health_system.current_health = player.health_system.total_health
+			player.health_system.health_updated.emit(player.health_system.current_health)
+
+		if player.stamina_system:
+			player.stamina_system.current_stamina = player.stamina_system.total_stamina
+			player.stamina_system.stamina_updated.emit(player.stamina_system.current_stamina)
+
+		# Auto-save the game
+		SaveSystem.save_game()
+
 	player.trigger_interact(interact_type)
 	anim_player.play("respawn",.2)
 	await anim_player.animation_finished
 	player.queue_free()
-	
+
 
 func respawn():
 	if reset_level:
