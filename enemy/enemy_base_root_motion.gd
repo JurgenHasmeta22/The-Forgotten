@@ -162,14 +162,27 @@ func set_default_target(): ## Creates a node to return to after patrolling if
 		target = default_target
 
 func _on_target_spotted(_spotted_target): # Updates from a TargetSensor if a target is found.
+	if not is_instance_valid(self) or is_queued_for_deletion():
+		return
+
 	if target != _spotted_target:
 		target = _spotted_target
-	chase_timer.start()
+
+	if chase_timer and is_instance_valid(chase_timer) and chase_timer.is_inside_tree():
+		chase_timer.start()
+	else:
+		# If we can't start the timer, at least make sure we don't lose the target immediately
+		print("Chase timer not available in _on_target_spotted")
 
 func _on_target_lost():
-	if is_instance_valid(target):
-		if is_instance_valid(chase_timer): # just trying to quiet some errors
+	if is_instance_valid(target) and is_instance_valid(self) and not is_queued_for_deletion():
+		if chase_timer and is_instance_valid(chase_timer) and chase_timer.is_inside_tree():
 			chase_timer.start()
+		else:
+			# If chase_timer is not valid, just call give_up directly after a delay
+			await get_tree().create_timer(3.0).timeout
+			if is_instance_valid(self) and not is_queued_for_deletion():
+				give_up()
 
 func _on_chase_timer_timeout():
 	give_up()

@@ -40,7 +40,10 @@ func _input(event):
 
 func _on_continue_button_pressed():
 	# Load the most recent save
+	print("Loading most recent save...")
 	SaveSystem.load_game()
+
+	# This will load the saved scene and position the player at their saved location
 
 func _on_new_game_button_pressed():
 	# Start a new game

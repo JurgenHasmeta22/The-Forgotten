@@ -58,7 +58,8 @@ func _on_respawn_button_pressed():
 		# If no bonfire has been visited, just reload the current scene
 		get_tree().reload_current_scene()
 	else:
-		# Respawn at the last bonfire
+		# Respawn at the last bonfire - this will reset the level AND place you at the last bonfire
+		print("Respawning at last bonfire: " + SaveSystem.last_bonfire_id)
 		SaveSystem.respawn_at_last_bonfire()
 
 # Unmute all gameplay sounds
