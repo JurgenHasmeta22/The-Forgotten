@@ -532,8 +532,23 @@ func death():
 	# Freeze the character in place
 	velocity = Vector3.ZERO
 
+	# Stop any sounds the player might be making
+	_stop_all_player_sounds()
+
 	# Emit death signal for UI and animations
 	death_started.emit()
+
+# Stop all sounds coming from the player
+func _stop_all_player_sounds():
+	# Find all AudioStreamPlayer nodes that are children of the player
+	for child in get_children():
+		if child is AudioStreamPlayer or child is AudioStreamPlayer3D:
+			child.stop()
+
+	# Also stop any animation sounds by setting a flag
+	# This assumes animations might be playing sounds
+	# You may need to adjust this based on your animation system
+	busy = true
 
 	# Use a one-shot timer to show the game over screen after a short delay
 	var game_over_timer = Timer.new()
