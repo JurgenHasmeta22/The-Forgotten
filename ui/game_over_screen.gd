@@ -11,8 +11,12 @@ func _ready():
 	# Make sure the game is not paused
 	get_tree().paused = false
 
-	# Play the fade-in animation
-	animation_player.play("fade_in")
+	# Play the fade-in animation if it exists
+	if animation_player.has_animation("fade_in"):
+		animation_player.play("fade_in")
+	else:
+		# If animation doesn't exist, just set the modulate directly
+		modulate = Color(1, 1, 1, 1)
 
 func _input(event):
 	if visible:
@@ -26,6 +30,9 @@ func _on_respawn_button_pressed():
 	# Hide the game over screen
 	hide()
 
+	# Queue free to remove this screen completely
+	queue_free()
+
 	# Respawn at the last bonfire
 	if SaveSystem.last_bonfire_scene.is_empty():
 		# If no bonfire has been visited, just reload the current scene
@@ -37,6 +44,9 @@ func _on_respawn_button_pressed():
 func _on_quit_button_pressed():
 	# Hide the game over screen
 	hide()
+
+	# Queue free to remove this screen completely
+	queue_free()
 
 	# Return to the main menu
 	GameManager.change_scene("res://ui/start_menu.tscn")

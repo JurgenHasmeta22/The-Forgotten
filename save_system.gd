@@ -209,16 +209,25 @@ func respawn_at_last_bonfire() -> void:
 		push_error("No last bonfire scene set")
 		return
 
+	print("Respawning at bonfire: ID=" + last_bonfire_id + ", Position=" + str(last_bonfire_position))
+
+	# Store the position locally to avoid accessing freed objects
+	var respawn_position = last_bonfire_position
+	var respawn_scene = last_bonfire_scene
+
 	# If we're in a different scene, load the bonfire scene first
-	if last_bonfire_scene != get_tree().current_scene.scene_file_path:
-		GameManager.change_scene_with_loading(last_bonfire_scene)
+	if respawn_scene != get_tree().current_scene.scene_file_path:
+		GameManager.change_scene_with_loading(respawn_scene)
 		# Wait for the scene to load
 		await get_tree().process_frame
 
 	# Find the player and move them to the last bonfire position
 	var player = get_tree().get_first_node_in_group("player")
 	if player:
-		player.global_position = last_bonfire_position
+		# Use the stored position rather than trying to access the bonfire
+		player.global_position = respawn_position
+
+		print("Player respawned at position: " + str(player.global_position))
 
 		# Reset player health and stamina
 		if player.health_system:

@@ -29,7 +29,11 @@ func _ready():
 func activate(player: CharacterBody3D):
 	# Set this as the last bonfire if it's a bonfire
 	if is_bonfire:
-		SaveSystem.set_last_bonfire(global_position, bonfire_id)
+		# Store the position in a local variable to ensure it's captured correctly
+		var bonfire_pos = global_position
+		print("Activating bonfire at position: " + str(bonfire_pos))
+
+		SaveSystem.set_last_bonfire(bonfire_pos, bonfire_id)
 
 		# Heal the player when they rest at a bonfire
 		if player.health_system:
