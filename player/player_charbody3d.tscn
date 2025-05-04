@@ -43,6 +43,8 @@
 [ext_resource type="Script" uid="uid://6x61e7g6ro6c" path="res://ui/item_slot.gd" id="36_vymyb"]
 [ext_resource type="Script" uid="uid://dnhu7tojh4k5i" path="res://ui/health_bar.gd" id="38_auti3"]
 [ext_resource type="Script" uid="uid://cl0vbs3rdvk73" path="res://enemy/health_system.gd" id="41_x7csm"]
+[ext_resource type="Script" path="res://player/stamina_system.gd" id="stamina_system_script"]
+[ext_resource type="Script" path="res://ui/stamina_bar.gd" id="stamina_bar_script"]
 [ext_resource type="PackedScene" uid="uid://r31q8k2be4qk" path="res://player/player_interact_sensors/sensor_cast.tscn" id="44_gyr7x"]
 
 [sub_resource type="Animation" id="Animation_pqgn1"]
@@ -1567,6 +1569,24 @@ colors = PackedColorArray(0, 0, 0, 1)
 gradient = SubResource("Gradient_q57cu")
 width = 8
 
+[sub_resource type="Gradient" id="Gradient_stamina_bg"]
+offsets = PackedFloat32Array(0)
+colors = PackedColorArray(0.1, 0.1, 0.1, 0.8)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_stamina_bg"]
+gradient = SubResource("Gradient_stamina_bg")
+width = 240
+height = 24
+
+[sub_resource type="Gradient" id="Gradient_stamina_fill"]
+offsets = PackedFloat32Array(0)
+colors = PackedColorArray(0.2, 0.4, 0.8, 1.0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_stamina_fill"]
+gradient = SubResource("Gradient_stamina_fill")
+width = 240
+height = 24
+
 [sub_resource type="FontFile" id="FontFile_hhqnr"]
 subpixel_positioning = 0
 msdf_pixel_range = 14
@@ -1646,7 +1666,7 @@ material = SubResource("StandardMaterial3D_ygg1y")
 size = Vector2(0.02, 0.02)
 orientation = 2
 
-[node name="PlayerCharacterBodySoulsBase" type="CharacterBody3D" node_paths=PackedStringArray("animation_tree", "weapon_system", "gadget_system", "health_system", "inventory_system") groups=["player"]]
+[node name="PlayerCharacterBodySoulsBase" type="CharacterBody3D" node_paths=PackedStringArray("animation_tree", "weapon_system", "gadget_system", "health_system", "stamina_system", "inventory_system") groups=["player"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.38419e-07, 0)
 collision_layer = 2
 collision_mask = 3
@@ -1657,6 +1677,7 @@ animation_tree = NodePath("AnimStateTree")
 weapon_system = NodePath("WeaponSystem")
 gadget_system = NodePath("GadgetSystem")
 health_system = NodePath("HealthSystem")
+stamina_system = NodePath("StaminaSystem")
 inventory_system = NodePath("InventorySystem")
 hard_landing_height = 2.0
 
@@ -2120,6 +2141,49 @@ texture_progress = SubResource("GradientTexture2D_hctwx")
 script = ExtResource("38_auti3")
 health_system = NodePath("../../../../HealthSystem")
 
+[node name="StaminaBar" type="Control" parent="GUI"]
+layout_mode = 3
+anchors_preset = 0
+offset_top = 50.0
+offset_right = 40.0
+offset_bottom = 90.0
+
+[node name="NinePatchRect" type="NinePatchRect" parent="GUI/StaminaBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 234.0
+offset_bottom = 5.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("32_sdjc6")
+patch_margin_left = 16
+patch_margin_top = 16
+patch_margin_right = 16
+patch_margin_bottom = 16
+
+[node name="MarginContainer" type="MarginContainer" parent="GUI/StaminaBar"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+
+[node name="StaminaBar" type="TextureProgressBar" parent="GUI/StaminaBar/MarginContainer" node_paths=PackedStringArray("stamina_system")]
+self_modulate = Color(0.2, 0.4, 0.8, 1.0)
+layout_mode = 2
+max_value = 100.0
+value = 100.0
+texture_under = SubResource("GradientTexture2D_stamina_bg")
+texture_progress = SubResource("GradientTexture2D_stamina_fill")
+script = ExtResource("stamina_bar_script")
+stamina_system = NodePath("../../../../StaminaSystem")
+low_stamina_threshold = 25.0
+
 [node name="SignalSwitch" type="Node" parent="GUI" node_paths=PackedStringArray("signaling_node")]
 script = ExtResource("17_xborg")
 signaling_node = NodePath("../..")
@@ -2137,6 +2201,16 @@ starter_item2 = ExtResource("34_fv8ea")
 script = ExtResource("41_x7csm")
 hit_reporting_node = NodePath("..")
 heal_reporting_node = NodePath("..")
+
+[node name="StaminaSystem" type="Node" parent="."]
+script = ExtResource("stamina_system_script")
+total_stamina = 100
+stamina_regen_rate = 15.0
+stamina_regen_delay = 1.0
+sprint_cost = 20.0
+attack_cost = 15.0
+dodge_cost = 25.0
+block_cost = 5.0
 
 [node name="TriggeredSounds" type="Node" parent="."]
 
