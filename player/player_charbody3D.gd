@@ -535,21 +535,18 @@ func death():
 	# Emit death signal for UI and animations
 	death_started.emit()
 
-	# Use a one-shot timer to respawn at the last bonfire
-	var reload_timer = Timer.new()
-	reload_timer.one_shot = true
-	reload_timer.wait_time = 3.0
-	reload_timer.timeout.connect(func():
+	# Use a one-shot timer to show the game over screen after a short delay
+	var game_over_timer = Timer.new()
+	game_over_timer.one_shot = true
+	game_over_timer.wait_time = 3.0
+	game_over_timer.timeout.connect(func():
 		# This will be called when the timer expires
-		if SaveSystem.last_bonfire_scene.is_empty():
-			# If no bonfire has been visited, just reload the current scene
-			get_tree().reload_current_scene()
-		else:
-			# Respawn at the last bonfire
-			SaveSystem.respawn_at_last_bonfire()
+		# Show the game over screen
+		var game_over_screen = load("res://ui/game_over_screen_new.tscn").instantiate()
+		get_tree().root.add_child(game_over_screen)
 	)
-	add_child(reload_timer)
-	reload_timer.start()
+	add_child(game_over_timer)
+	game_over_timer.start()
 
 func system_visible(_system_node, _new_toggle):
 		if _system_node:

@@ -14,16 +14,22 @@ extends StaticBody3D
 @onready var flame_particles = $FlameParticles
 @onready var interact_type = "SPAWN"
 @export var is_bonfire: bool = true  # Whether this spawn site acts as a bonfire (save point)
+@export var bonfire_id: String = ""  # Unique identifier for this bonfire
 
 
 func _ready():
 	add_to_group("interactable")
 	collision_layer = 9
 
+	# Generate a unique ID for this bonfire if none is provided
+	if bonfire_id.is_empty():
+		# Use the position as part of the ID to make it unique
+		bonfire_id = "bonfire_" + str(get_instance_id()) + "_" + str(global_position.x).substr(0, 4) + "_" + str(global_position.z).substr(0, 4)
+
 func activate(player: CharacterBody3D):
 	# Set this as the last bonfire if it's a bonfire
 	if is_bonfire:
-		SaveSystem.set_last_bonfire(global_position)
+		SaveSystem.set_last_bonfire(global_position, bonfire_id)
 
 		# Heal the player when they rest at a bonfire
 		if player.health_system:
