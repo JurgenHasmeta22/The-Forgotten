@@ -122,6 +122,9 @@ enum state {FREE, STATIC, CLIMB}
 signal changed_state(new_state: state)
 
 func _ready():
+	# Reset death state on scene load
+	is_dead = false
+
 	if animation_tree:
 		animation_tree.animation_measured.connect(_on_animation_measured)
 
@@ -515,12 +518,21 @@ func use_item():
 	slowed = false
 
 func death():
+	if is_dead:
+		return  # Prevent death function from running multiple times
+
 	current_state = state.STATIC
 	hurt_cool_down.start(10)
 	is_dead = true
 	death_started.emit()
-	await get_tree().create_timer(3).timeout
-	get_tree().reload_current_scene()
+
+	# Use a one-shot timer to reload the scene
+	var reload_timer = Timer.new()
+	reload_timer.one_shot = true
+	reload_timer.wait_time = 3.0
+	reload_timer.timeout.connect(func(): get_tree().reload_current_scene())
+	add_child(reload_timer)
+	reload_timer.start()
 
 func system_visible(_system_node, _new_toggle):
 		if _system_node:

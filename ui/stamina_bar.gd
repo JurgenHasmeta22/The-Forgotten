@@ -20,7 +20,7 @@ func _ready():
 	
 	original_tint = self_modulate
 
-func _process(delta):
+func _process(_delta):
 	if is_low_stamina:
 		# Create a pulsing effect when stamina is low
 		var pulse_value = (sin(Time.get_ticks_msec() * 0.005 * pulse_speed) + 1.0) / 2.0
