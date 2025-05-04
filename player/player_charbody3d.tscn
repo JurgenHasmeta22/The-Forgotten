@@ -1,7 +1,7 @@
 [gd_scene load_steps=251 format=3 uid="uid://bn7vh6v8mmgja"]
 
 [ext_resource type="Script" uid="uid://cwossadiowswq" path="res://player/player_charbody3D.gd" id="1_4per7"]
-[ext_resource type="PackedScene" uid="uid://bffefrgxjb4sc" path="res://assets/characters/minnyquinn.glb" id="2_74vsj"]
+[ext_resource type="PackedScene" uid="uid://60xa57sybnu3" path="res://assets/characters/mannyquin.glb" id="2_74vsj"]
 [ext_resource type="AnimationLibrary" uid="uid://d3h8qu2uqwwdf" path="res://player/animation_libraries/MeleeLib.res" id="3_8tvpy"]
 [ext_resource type="Script" uid="uid://hxvpw0g7jtfp" path="res://player/player_anim_tree.gd" id="3_f2g20"]
 [ext_resource type="Script" uid="uid://wgls66jefwvg" path="res://player/equipment_system/equipment_system.gd" id="4_bebk6"]
@@ -1681,9 +1681,9 @@ stamina_system = NodePath("StaminaSystem")
 inventory_system = NodePath("InventorySystem")
 hard_landing_height = 2.0
 
-[node name="minnyquinn" parent="." instance=ExtResource("2_74vsj")]
+[node name="mannyquin" parent="." instance=ExtResource("2_74vsj")]
 
-[node name="GeneralSkeleton" parent="minnyquinn/godot_rig" index="0"]
+[node name="GeneralSkeleton" parent="mannyquin/godot_rig" index="0"]
 bones/1/position = Vector3(-1.55073e-10, 0.810669, -0.0801268)
 bones/1/rotation = Quaternion(0.0425587, 6.33362e-10, -2.45635e-09, 0.999094)
 bones/2/rotation = Quaternion(-4.47035e-08, 8.49321e-15, 4.21885e-15, 1)
@@ -1755,16 +1755,16 @@ bones/56/scale = Vector3(0.988385, 0.99634, 1.01638)
 bones/57/rotation = Quaternion(6.11311e-05, 1, -0.000293672, 3.63251e-05)
 bones/57/scale = Vector3(1.00022, 0.999735, 1.00005)
 
-[node name="Eyes" parent="minnyquinn/godot_rig/GeneralSkeleton" index="1"]
+[node name="Eyes" parent="mannyquin/godot_rig/GeneralSkeleton" index="1"]
 visible = false
 
-[node name="Helm" parent="minnyquinn/godot_rig/GeneralSkeleton" index="3"]
+[node name="Helm" parent="mannyquin/godot_rig/GeneralSkeleton" index="3"]
 visible = false
 
-[node name="Lashes" parent="minnyquinn/godot_rig/GeneralSkeleton" index="4"]
+[node name="Lashes" parent="mannyquin/godot_rig/GeneralSkeleton" index="4"]
 visible = false
 
-[node name="AnimationPlayer" parent="minnyquinn" index="1"]
+[node name="AnimationPlayer" parent="mannyquin" index="1"]
 libraries = {
 &"": SubResource("AnimationLibrary_7otn8"),
 &"MeleeLib": ExtResource("3_8tvpy")
@@ -1775,12 +1775,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.872986, 0)
 shape = SubResource("CapsuleShape3D_7f43o")
 
 [node name="AnimStateTree" type="AnimationTree" parent="." node_paths=PackedStringArray("player_node")]
-root_node = NodePath("../minnyquinn")
+root_node = NodePath("../mannyquin")
 root_motion_track = NodePath("%GeneralSkeleton:Root")
 root_motion_local = false
 callback_mode_process = 0
 tree_root = SubResource("AnimationNodeBlendTree_pu57o")
-anim_player = NodePath("../minnyquinn/AnimationPlayer")
+anim_player = NodePath("../mannyquin/AnimationPlayer")
 parameters/Attack/active = false
 parameters/Attack/internal_active = false
 parameters/Attack/request = 0
@@ -1839,7 +1839,7 @@ transform = Transform3D(-0.513748, -0.0752878, 0.857577, -0.461358, -0.771134, -
 bone_name = "RightHand"
 bone_idx = 32
 use_external_skeleton = true
-external_skeleton = NodePath("../../minnyquinn/godot_rig/GeneralSkeleton")
+external_skeleton = NodePath("../../mannyquin/godot_rig/GeneralSkeleton")
 
 [node name="HandPivot" type="Marker3D" parent="WeaponSystem/RightHand"]
 transform = Transform3D(-4.37114e-08, 1, -4.37114e-08, 0, -4.37114e-08, -1, -1, -4.37114e-08, 1.91069e-15, 0, 0.085, 0.025)
@@ -1851,7 +1851,7 @@ transform = Transform3D(1, 1.83395e-08, -1.7343e-09, -1.81789e-08, 0.967234, -0.
 bone_name = "UpperChest"
 bone_idx = 4
 use_external_skeleton = true
-external_skeleton = NodePath("../../minnyquinn/godot_rig/GeneralSkeleton")
+external_skeleton = NodePath("../../mannyquin/godot_rig/GeneralSkeleton")
 
 [node name="BackPivot" type="Marker3D" parent="WeaponSystem/BackBone"]
 transform = Transform3D(0.0014642, 0.00341032, -0.999993, -0.0666676, -0.997769, -0.00350057, -0.997774, 0.0666723, -0.00123349, -0.120301, 0.214743, -0.165111)
@@ -1895,7 +1895,7 @@ transform = Transform3D(-0.400218, -0.216113, -0.893422, 0.400805, -0.87676, -0.
 bone_name = "LeftHand"
 bone_idx = 13
 use_external_skeleton = true
-external_skeleton = NodePath("../../minnyquinn/godot_rig/GeneralSkeleton")
+external_skeleton = NodePath("../../mannyquin/godot_rig/GeneralSkeleton")
 
 [node name="HandPivot" type="Marker3D" parent="GadgetSystem/LeftHand"]
 transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0.095, 0.02)
@@ -1907,7 +1907,7 @@ transform = Transform3D(1, 1.58652e-08, -1.83552e-10, -1.56653e-08, 0.985429, -0
 bone_name = "Chest"
 bone_idx = 3
 use_external_skeleton = true
-external_skeleton = NodePath("../../minnyquinn/godot_rig/GeneralSkeleton")
+external_skeleton = NodePath("../../mannyquin/godot_rig/GeneralSkeleton")
 
 [node name="HipPivot" type="Marker3D" parent="GadgetSystem/HipBone"]
 transform = Transform3D(-0.970843, 0.139733, 0.194774, -0.156285, -0.985062, -0.072306, 0.181762, -0.100638, 0.97818, 0.0880577, -0.128088, -0.213723)
@@ -1950,7 +1950,7 @@ transform = Transform3D(-0.400218, -0.216113, -0.893422, 0.400805, -0.87676, -0.
 bone_name = "LeftHand"
 bone_idx = 13
 use_external_skeleton = true
-external_skeleton = NodePath("../../minnyquinn/godot_rig/GeneralSkeleton")
+external_skeleton = NodePath("../../mannyquin/godot_rig/GeneralSkeleton")
 
 [node name="HandPivot" type="Marker3D" parent="ItemSystem/HandBone"]
 transform = Transform3D(-0.0169522, -0.991058, -0.132351, 0.125911, -0.133433, 0.983027, -0.991897, 0, 0.127047, 1.93715e-07, 0.0987651, 0.0465127)
@@ -1960,7 +1960,7 @@ transform = Transform3D(1, 4.96216e-09, 1.05652e-09, -4.85434e-09, 0.996377, -0.
 bone_name = "Spine"
 bone_idx = 2
 use_external_skeleton = true
-external_skeleton = NodePath("../../minnyquinn/godot_rig/GeneralSkeleton")
+external_skeleton = NodePath("../../mannyquin/godot_rig/GeneralSkeleton")
 
 [node name="HipPivot" type="Marker3D" parent="ItemSystem/StorageBone"]
 transform = Transform3D(0.983744, -0.179575, 0, 0.179575, 0.983745, 0, -6.51926e-09, 7.45058e-09, 1, 0.135887, 0.0248051, -0.0830496)
