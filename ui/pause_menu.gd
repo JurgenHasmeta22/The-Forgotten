@@ -1,7 +1,7 @@
 extends Control
 
-@onready var resume_button = $VBoxContainer/ResumeButton
-@onready var exit_button = $VBoxContainer/ExitButton
+@onready var resume_button = $VBoxContainer/PanelContainer/MarginContainer/VBoxContainer/ResumeButton
+@onready var exit_button = $VBoxContainer/PanelContainer/MarginContainer/VBoxContainer/ExitButton
 
 func _ready():
 	# Hide the pause menu initially
@@ -21,8 +21,11 @@ func _on_game_resumed():
 
 func _input(event):
 	if visible:
-		if event.is_action_pressed("ui_cancel"):
-			_on_resume_button_pressed()
+		if event.is_action_pressed("ui_accept"):
+			if resume_button.has_focus():
+				_on_resume_button_pressed()
+			elif exit_button.has_focus():
+				_on_exit_button_pressed()
 		elif event.is_action_pressed("ui_down") and resume_button.has_focus():
 			exit_button.grab_focus()
 		elif event.is_action_pressed("ui_up") and exit_button.has_focus():

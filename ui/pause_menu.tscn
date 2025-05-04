@@ -1,14 +1,21 @@
-[gd_scene load_steps=10 format=3 uid="uid://c8yvxw3judnqm"]
+[gd_scene load_steps=12 format=3 uid="uid://c8yvxw3judnqm"]
 
 [ext_resource type="Script" path="res://ui/pause_menu.gd" id="1_ixnqm"]
 [ext_resource type="Texture2D" uid="uid://c46nfvbeeb3pr" path="res://ui/panel-border-027.png" id="2_ixnqm"]
 
 [sub_resource type="Gradient" id="Gradient_yvnqw"]
-colors = PackedColorArray(0.0627451, 0.0784314, 0.101961, 0.8, 0.133333, 0.164706, 0.211765, 0.8)
+offsets = PackedFloat32Array(0, 0.3, 0.7, 1)
+colors = PackedColorArray(0.0627451, 0.0784314, 0.101961, 0.9, 0.0784314, 0.101961, 0.133333, 0.9, 0.101961, 0.133333, 0.164706, 0.9, 0.133333, 0.164706, 0.211765, 0.9)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_yvnqw"]
 gradient = SubResource("Gradient_yvnqw")
 fill_to = Vector2(0, 1)
+width = 1280
+height = 720
+
+[sub_resource type="Gradient" id="Gradient_particles"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(0, 0, 0, 0, 0.278431, 0.54902, 0.74902, 0.1, 0, 0, 0, 0)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yvnqw"]
 texture = ExtResource("2_ixnqm")
@@ -63,6 +70,22 @@ Button/styles/hover = SubResource("StyleBoxTexture_yvnqw_hover")
 Button/styles/normal = SubResource("StyleBoxTexture_yvnqw")
 Button/styles/pressed = SubResource("StyleBoxTexture_yvnqw_pressed")
 
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_yvnqw"]
+emission_shape = 3
+emission_box_extents = Vector3(640, 1, 1)
+particle_flag_disable_z = true
+direction = Vector3(0, 1, 0)
+spread = 0.0
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 10.0
+initial_velocity_max = 30.0
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+scale_min = 1.0
+scale_max = 2.0
+color = Color(0.278431, 0.54902, 0.74902, 0.1)
+color_ramp = SubResource("Gradient_particles")
+
 [node name="PauseMenu" type="Control"]
 process_mode = 3
 layout_mode = 3
@@ -82,6 +105,14 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("GradientTexture2D_yvnqw")
 
+[node name="Particles" type="GPUParticles2D" parent="."]
+position = Vector2(640, 0)
+amount = 30
+process_material = SubResource("ParticleProcessMaterial_yvnqw")
+lifetime = 20.0
+preprocess = 10.0
+visibility_rect = Rect2(-640, 0, 1280, 720)
+
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
@@ -98,37 +129,55 @@ grow_vertical = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme = SubResource("Theme_yvnqw")
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 30
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 25
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.278431, 0.54902, 0.74902, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.5)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 1
+theme_override_constants/shadow_outline_size = 1
 theme_override_font_sizes/font_size = 48
 text = "Paused"
 horizontal_alignment = 1
 
-[node name="ResumeButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(200, 50)
+[node name="ResumeButton" type="Button" parent="VBoxContainer/PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(220, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 theme = SubResource("Theme_yvnqw")
 theme_override_colors/font_color = Color(0.278431, 0.54902, 0.74902, 1)
 theme_override_colors/font_hover_color = Color(0.4, 0.65, 0.85, 1)
 theme_override_colors/font_focus_color = Color(0.4, 0.65, 0.85, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 24
 text = "Resume"
 
-[node name="ExitButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(200, 50)
+[node name="ExitButton" type="Button" parent="VBoxContainer/PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(220, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 theme = SubResource("Theme_yvnqw")
 theme_override_colors/font_color = Color(0.278431, 0.54902, 0.74902, 1)
 theme_override_colors/font_hover_color = Color(0.4, 0.65, 0.85, 1)
 theme_override_colors/font_focus_color = Color(0.4, 0.65, 0.85, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 24
 text = "Exit to Menu"
 
-[connection signal="pressed" from="VBoxContainer/ResumeButton" to="." method="_on_resume_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/ExitButton" to="." method="_on_exit_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/PanelContainer/MarginContainer/VBoxContainer/ResumeButton" to="." method="_on_resume_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/PanelContainer/MarginContainer/VBoxContainer/ExitButton" to="." method="_on_exit_button_pressed"]
