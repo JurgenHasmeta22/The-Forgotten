@@ -1,0 +1,121 @@
+[gd_scene load_steps=10 format=3 uid="uid://bqnvv5qpxq5yd"]
+
+[ext_resource type="Script" path="res://ui/start_menu.gd" id="1_ixnqm"]
+[ext_resource type="Texture2D" uid="uid://c46nfvbeeb3pr" path="res://ui/panel-border-027.png" id="2_ixnqm"]
+
+[sub_resource type="Gradient" id="Gradient_yvnqw"]
+colors = PackedColorArray(0.0627451, 0.0784314, 0.101961, 1, 0.133333, 0.164706, 0.211765, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_yvnqw"]
+gradient = SubResource("Gradient_yvnqw")
+fill_to = Vector2(0, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yvnqw"]
+texture = ExtResource("2_ixnqm")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+expand_margin_left = 5.0
+expand_margin_top = 5.0
+expand_margin_right = 5.0
+expand_margin_bottom = 5.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yvnqw_hover"]
+texture = ExtResource("2_ixnqm")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+expand_margin_left = 5.0
+expand_margin_top = 5.0
+expand_margin_right = 5.0
+expand_margin_bottom = 5.0
+modulate_color = Color(0.8, 0.9, 1.0, 1.0)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yvnqw_pressed"]
+texture = ExtResource("2_ixnqm")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+expand_margin_left = 5.0
+expand_margin_top = 5.0
+expand_margin_right = 5.0
+expand_margin_bottom = 5.0
+modulate_color = Color(0.6, 0.7, 0.9, 1.0)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yvnqw_focus"]
+texture = ExtResource("2_ixnqm")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+expand_margin_left = 5.0
+expand_margin_top = 5.0
+expand_margin_right = 5.0
+expand_margin_bottom = 5.0
+modulate_color = Color(0.7, 0.8, 1.0, 1.0)
+
+[sub_resource type="Theme" id="Theme_yvnqw"]
+Button/styles/focus = SubResource("StyleBoxTexture_yvnqw_focus")
+Button/styles/hover = SubResource("StyleBoxTexture_yvnqw_hover")
+Button/styles/normal = SubResource("StyleBoxTexture_yvnqw")
+Button/styles/pressed = SubResource("StyleBoxTexture_yvnqw_pressed")
+
+[node name="StartMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ixnqm")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture2D_yvnqw")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -100.0
+offset_right = 200.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.278431, 0.54902, 0.74902, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.5)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 64
+text = "THE FORGOTTEN"
+horizontal_alignment = 1
+
+[node name="StartButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(200, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+theme = SubResource("Theme_yvnqw")
+theme_override_colors/font_color = Color(0.278431, 0.54902, 0.74902, 1)
+theme_override_colors/font_hover_color = Color(0.4, 0.65, 0.85, 1)
+theme_override_colors/font_focus_color = Color(0.4, 0.65, 0.85, 1)
+theme_override_font_sizes/font_size = 24
+text = "START GAME"
+
+[connection signal="pressed" from="VBoxContainer/StartButton" to="." method="_on_start_button_pressed"]

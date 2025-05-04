@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://uiw1spc0mevb"]
+[gd_scene load_steps=30 format=3 uid="uid://uiw1spc0mevb"]
 
 [ext_resource type="PackedScene" uid="uid://bn7vh6v8mmgja" path="res://player/player_charbody3d.tscn" id="1_70e33"]
 [ext_resource type="PackedScene" uid="uid://cnv210lnfdoan" path="res://interactable objects/doors/door_object.tscn" id="2_4fq4l"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" uid="uid://bhg8n6q2vgi07" path="res://cameras/area_cam/area_cam.gd" id="13_2aall"]
 [ext_resource type="AudioStream" uid="uid://ddfdcmyfdq6fi" path="res://audio/bone_in_the_walls__level_loop_session.ogg" id="14_wsft0"]
 [ext_resource type="PackedScene" uid="uid://cq2lr6sclvutj" path="res://enemy/enemy_base_root_motion.tscn" id="15_yac72"]
+[ext_resource type="PackedScene" uid="uid://dqnvv5qpxq5yd" path="res://ui/game_ui.tscn" id="16_ixnqm"]
 
 [sub_resource type="Gradient" id="Gradient_sxwq5"]
 colors = PackedColorArray(0.00282093, 0.0124845, 0.103078, 1, 0.742305, 0.387089, 0.172949, 1)
@@ -91,6 +92,8 @@ gradient = SubResource("Gradient_f4sec")
 width = 8
 
 [node name="World" type="Node3D"]
+
+[node name="GameUI" parent="." instance=ExtResource("16_ixnqm")]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_eed6x")

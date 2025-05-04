@@ -211,8 +211,8 @@ func _input(_event: InputEvent):
 	if !Input.is_anything_pressed():
 		current_camera = get_viewport().get_camera_3d()
 
-	if _event.is_action_pressed("ui_cancel"):
-		get_tree().quit()
+	if _event.is_action_pressed("pause_game"):
+		GameManager.toggle_pause()
 
 	## strafe toggle on/off
 	if _event.is_action_pressed("strafe_target"):
