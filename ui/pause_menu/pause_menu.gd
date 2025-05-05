@@ -36,4 +36,4 @@ func _on_resume_button_pressed():
 
 func _on_exit_button_pressed():
 	# Use direct scene change (no loading screen) when going back to start menu
-	GameManager.change_scene("res://ui/start_menu.tscn")
+	GameManager.change_scene("res://ui/start_menu/start_menu.tscn")

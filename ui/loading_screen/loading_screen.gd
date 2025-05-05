@@ -31,7 +31,7 @@ func load_scene(scene_path):
 	target_scene = scene_path
 
 	# Start the loading process
-	var loader = ResourceLoader.load_threaded_request(target_scene)
+	var _loader = ResourceLoader.load_threaded_request(target_scene)
 
 	# Create a timer to check progress
 	var timer = Timer.new()
@@ -72,5 +72,5 @@ func _check_loading_progress():
 		push_error("Failed to load scene: " + target_scene)
 
 		# Go back to start menu as fallback
-		get_tree().change_scene_to_file("res://ui/start_menu.tscn")
+		get_tree().change_scene_to_file("res://ui/start_menu/start_menu.tscn")
 		queue_free()

@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://dqnvv5qpxq5yd"]
 
-[ext_resource type="PackedScene" uid="uid://c8yvxw3judnqm" path="res://ui/pause_menu.tscn" id="1_ixnqm"]
-[ext_resource type="PackedScene" uid="uid://c8yvxw3judnqm" path="res://ui/save_indicator.tscn" id="2_ixnqm"]
+[ext_resource type="PackedScene" uid="uid://c8yvxw3judnqm" path="res://ui/pause_menu/pause_menu.tscn" id="1_ixnqm"]
+[ext_resource type="PackedScene" uid="uid://dh1l67x8iqkre" path="res://ui/save_indicator/save_indicator.tscn" id="2_ixnqm"]
 
 [node name="GameUI" type="CanvasLayer"]
 layer = 10

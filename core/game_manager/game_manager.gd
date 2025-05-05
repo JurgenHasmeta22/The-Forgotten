@@ -3,7 +3,7 @@ extends Node
 # Game state variables
 var is_game_paused: bool = false
 var current_scene: Node = null
-var loading_screen_scene = preload("res://ui/loading_screen.tscn")
+var loading_screen_scene = preload("res://ui/loading_screen/loading_screen.tscn")
 
 # Signals
 signal game_paused

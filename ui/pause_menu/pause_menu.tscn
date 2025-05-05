@@ -1,6 +1,6 @@
 [gd_scene load_steps=12 format=3 uid="uid://c8yvxw3judnqm"]
 
-[ext_resource type="Script" path="res://ui/pause_menu.gd" id="1_ixnqm"]
+[ext_resource type="Script" path="res://ui/pause_menu/pause_menu.gd" id="1_ixnqm"]
 [ext_resource type="Texture2D" uid="uid://c46nfvbeeb3pr" path="res://ui/panel-border-027.png" id="2_ixnqm"]
 
 [sub_resource type="Gradient" id="Gradient_yvnqw"]
