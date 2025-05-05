@@ -5,16 +5,10 @@ extends Control
 @onready var load_game_button = $VBoxContainer/LoadGameButton
 
 func _ready():
-	# Ensure the game is not paused when the start menu is shown
 	get_tree().paused = false
-
-	# Add this menu to a group so SaveManager can find it
 	add_to_group("start_menu")
-
-	# Check for save files and update buttons
 	refresh_save_buttons()
 
-# Function to refresh the save buttons (can be called from SaveManager)
 func refresh_save_buttons():
 	print("StartMenu: Checking for save files...")
 
@@ -59,9 +53,9 @@ func _on_continue_button_pressed():
 		_on_new_game_button_pressed()
 
 func _on_new_game_button_pressed():
-	# Start a new game using SaveManager
 	SaveManager.new_game()
 
 func _on_load_game_button_pressed():
-	# Show the load game menu
-	get_tree().change_scene_to_file("res://ui/load_game_menu/load_game_menu.tscn")
+	print("StartMenu: Load Game button pressed, changing to load game menu")
+	# Use GameManager to change the scene instead of direct call
+	GameManager.change_scene("res://ui/load_game_menu/load_game_menu.tscn")

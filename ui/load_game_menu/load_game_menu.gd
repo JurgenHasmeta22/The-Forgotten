@@ -6,25 +6,29 @@ extends Control
 @onready var back_button = $VBoxContainer/PanelContainer/MarginContainer/VBoxContainer/BackButton
 
 func _ready():
-	hide()
+	visible = true
+	modulate.a = 1.0
 
-	# Update save slot buttons with save info
+	show()
 	update_save_slots()
-
-	# Set focus to the first available save slot or back button
 	set_initial_focus()
 
 func update_save_slots():
 	print("LoadGameMenu: Updating save slots...")
 
-	# Make sure the save directory exists
+	# Check if UI elements are properly loaded
+	if !is_instance_valid(save_slot_1) or !is_instance_valid(save_slot_2) or !is_instance_valid(save_slot_3):
+		push_error("LoadGameMenu: UI elements not properly loaded!")
+		return
+
 	SaveManager.ensure_save_directory_exists()
 
-	# Update save slot 1
 	var slot1_exists = SaveManager.save_exists(1)
 	print("LoadGameMenu: Save slot 1 exists: " + str(slot1_exists))
+    
 	if slot1_exists:
 		var save_info = SaveManager.get_save_info(1)
+
 		if save_info.is_empty():
 			save_slot_1.text = "Save Slot 1 - Corrupted"
 			save_slot_1.disabled = true
@@ -38,11 +42,12 @@ func update_save_slots():
 		save_slot_1.text = "Save Slot 1 - Empty"
 		save_slot_1.disabled = true
 
-	# Update save slot 2
 	var slot2_exists = SaveManager.save_exists(2)
 	print("LoadGameMenu: Save slot 2 exists: " + str(slot2_exists))
+
 	if slot2_exists:
 		var save_info = SaveManager.get_save_info(2)
+
 		if save_info.is_empty():
 			save_slot_2.text = "Save Slot 2 - Corrupted"
 			save_slot_2.disabled = true
@@ -56,11 +61,12 @@ func update_save_slots():
 		save_slot_2.text = "Save Slot 2 - Empty"
 		save_slot_2.disabled = true
 
-	# Update save slot 3
 	var slot3_exists = SaveManager.save_exists(3)
 	print("LoadGameMenu: Save slot 3 exists: " + str(slot3_exists))
+
 	if slot3_exists:
 		var save_info = SaveManager.get_save_info(3)
+
 		if save_info.is_empty():
 			save_slot_3.text = "Save Slot 3 - Corrupted"
 			save_slot_3.disabled = true
@@ -84,48 +90,44 @@ func set_initial_focus():
 	else:
 		back_button.grab_focus()
 
+func _process(_delta):
+	if !visible:
+		visible = true
+		modulate.a = 1.0
+		show()
+
 func _input(event):
 	if visible:
 		if event.is_action_pressed("ui_cancel"):
 			_on_back_button_pressed()
 
 func _on_save_slot_1_pressed():
-	print("LoadGameMenu: Loading save slot 1")
-	# Hide the menu
 	hide()
 
-	# Use SaveManager directly to load the save
 	var load_success = SaveManager.load_game(1)
+
 	if !load_success:
 		push_error("LoadGameMenu: Failed to load save from slot 1")
-		# Return to the start menu if loading fails
-		get_tree().change_scene_to_file("res://ui/start_menu/start_menu.tscn")
+		GameManager.change_scene("res://ui/start_menu/start_menu.tscn")
 
 func _on_save_slot_2_pressed():
-	print("LoadGameMenu: Loading save slot 2")
-	# Hide the menu
 	hide()
 
-	# Use SaveManager directly to load the save
 	var load_success = SaveManager.load_game(2)
+
 	if !load_success:
 		push_error("LoadGameMenu: Failed to load save from slot 2")
-		# Return to the start menu if loading fails
-		get_tree().change_scene_to_file("res://ui/start_menu/start_menu.tscn")
+		GameManager.change_scene("res://ui/start_menu/start_menu.tscn")
 
 func _on_save_slot_3_pressed():
-	print("LoadGameMenu: Loading save slot 3")
-	# Hide the menu
 	hide()
 
-	# Use SaveManager directly to load the save
 	var load_success = SaveManager.load_game(3)
+
 	if !load_success:
 		push_error("LoadGameMenu: Failed to load save from slot 3")
-		# Return to the start menu if loading fails
-		get_tree().change_scene_to_file("res://ui/start_menu/start_menu.tscn")
+		GameManager.change_scene("res://ui/start_menu/start_menu.tscn")
 
 func _on_back_button_pressed():
 	hide()
-	# Return to the start menu
-	get_tree().change_scene_to_file("res://ui/start_menu/start_menu.tscn")
+	GameManager.change_scene("res://ui/start_menu/start_menu.tscn")
