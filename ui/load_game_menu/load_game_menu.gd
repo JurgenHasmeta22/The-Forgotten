@@ -6,7 +6,6 @@ extends Control
 @onready var back_button = $VBoxContainer/PanelContainer/MarginContainer/VBoxContainer/BackButton
 
 func _ready():
-	# Hide the menu initially
 	hide()
 
 	# Update save slot buttons with save info

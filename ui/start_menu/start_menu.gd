@@ -44,14 +44,9 @@ func _input(event):
 			_on_load_game_button_pressed()
 
 func _on_continue_button_pressed():
-	# Load the most recent save
-	print("StartMenu: Loading most recent save...")
-
-	# Find the latest save slot
 	var latest_slot = SaveManager.get_latest_save_slot()
 
 	if latest_slot > 0:
-		# Use SaveManager directly to load the save
 		var load_success = SaveManager.load_game(latest_slot)
 
 		if !load_success:

@@ -20,15 +20,22 @@ func _ready():
 	add_to_group("interactable")
 	collision_layer = 9
 
-	# Generate a unique ID for this bonfire if none is provided
 	if bonfire_id.is_empty():
 		# Use the position as part of the ID to make it unique
 		bonfire_id = "bonfire_" + str(get_instance_id()) + "_" + str(global_position.x).substr(0, 4) + "_" + str(global_position.z).substr(0, 4)
 
+	# Use call_deferred to ensure the scene is fully loaded
+	call_deferred("_check_if_last_bonfire")
+
+func _check_if_last_bonfire():
+	# Make sure we're in the scene tree
+	if not is_inside_tree():
+		call_deferred("_check_if_last_bonfire")
+		return
+
 	# Check if this is the last bonfire the player visited
 	if bonfire_id == SaveManager.last_bonfire_id:
-		# Wait for the scene to be fully loaded
-		call_deferred("position_player_at_bonfire")
+		position_player_at_bonfire()
 
 func activate(player: CharacterBody3D):
 	if is_bonfire:
@@ -38,10 +45,8 @@ func activate(player: CharacterBody3D):
 			push_error("SpawnSite: Bonfire ID is empty! Generating a new one.")
 			bonfire_id = "bonfire_" + str(get_instance_id()) + "_" + str(global_position.x).substr(0, 4) + "_" + str(global_position.z).substr(0, 4)
 
-		# Use the proper function to set bonfire data
 		SaveManager.set_last_bonfire(bonfire_id, scene_path)
 
-		# Heal the player when they rest at a bonfire
 		if player.health_system:
 			player.health_system.current_health = player.health_system.total_health
 			player.health_system.health_updated.emit(player.health_system.current_health)
@@ -50,23 +55,14 @@ func activate(player: CharacterBody3D):
 			player.stamina_system.current_stamina = player.stamina_system.total_stamina
 			player.stamina_system.stamina_updated.emit(player.stamina_system.current_stamina)
 
-		# Play the animation
 		player.trigger_interact(interact_type)
 		anim_player.play("respawn", .2)
 
-		# Wait for animation to finish
 		await anim_player.animation_finished
-
-		# Explicitly emit the save icon shown signal
 		SaveManager.save_icon_shown.emit()
-
-		# Save the game directly
 		var _save_success = SaveManager.save_at_bonfire()
-
-		# Make sure the save icon is hidden
 		SaveManager.save_icon_hidden.emit()
 
-		# Wait a moment to ensure the save is complete
 		await get_tree().create_timer(0.5).timeout
 
 		# Queue free the player before reloading the scene
@@ -85,30 +81,33 @@ func activate(player: CharacterBody3D):
 
 func activate_visually():
 	if is_bonfire and flame_particles:
-		# Make sure the flame particles are active
 		flame_particles.emitting = true
 
-		# Play sound if needed
 		if audio_stream_player and !audio_stream_player.playing:
 			audio_stream_player.play()
 
 func position_player_at_bonfire():
-	# Wait a moment for the scene to fully load
-	await get_tree().create_timer(0.5).timeout
+	call_deferred("_deferred_position_player")
 
-	# Find the player
+func _deferred_position_player():
+	if not is_inside_tree():
+		call_deferred("_deferred_position_player")
+		return
+
+	# Wait a moment for the scene to fully load
+	await get_tree().process_frame
+	await get_tree().process_frame
+
 	var player = get_tree().get_first_node_in_group("player")
 
 	if player == null:
+		print("SpawnSite: No player found to position at bonfire")
 		return
 
 	# Position the player at this bonfire
 	player.global_position = global_position
-
-	# Activate the bonfire visually
 	activate_visually()
 
-	# Reset player health and stamina
 	if player.health_system:
 		player.health_system.current_health = player.health_system.total_health
 		player.health_system.health_updated.emit(player.health_system.current_health)
@@ -118,14 +117,10 @@ func position_player_at_bonfire():
 		player.stamina_system.stamina_updated.emit(player.stamina_system.current_stamina)
 
 func respawn():
-	# Update the SaveManager with this bonfire's data using the proper function
 	SaveManager.set_last_bonfire(bonfire_id, get_tree().current_scene.scene_file_path)
-
-	# Save the game to ensure bonfire data is saved
 	SaveManager.save_at_bonfire()
 
 	if reset_level:
-		# Reload the current scene to reset enemies
 		get_tree().reload_current_scene()
 	else:
 		# This branch is used if you want to keep the world state when resting at a bonfire
