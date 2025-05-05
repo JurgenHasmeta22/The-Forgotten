@@ -75,22 +75,12 @@ func load_game(slot: int = 1):
 
 	print("GameManager: Loading game from slot " + str(slot))
 
-	# Create a new loading screen scene
-	var loading_screen = loading_screen_scene.instantiate()
-
-	# Add it directly to the root
-	get_tree().root.add_child(loading_screen)
-
-	# Start the loading process
-	# Note: We don't await here because SaveManager.load_game will handle the scene change
-	# and we want to return control to the caller immediately
+	# Let SaveManager handle the loading process
+	# It will call change_scene_with_loading with the appropriate scene
 	var load_success = SaveManager.load_game(slot)
 
 	if not load_success:
 		push_error("GameManager: Failed to load game from slot " + str(slot))
-		# Remove the loading screen if loading failed
-		loading_screen.queue_free()
 		return
 
-	# The load_completed signal from SaveManager will be emitted when loading is done
 	print("GameManager: Load process started for slot " + str(slot))

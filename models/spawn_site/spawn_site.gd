@@ -6,15 +6,15 @@ extends StaticBody3D
 ## triggers the interact on the player while making any changes needed here.
 
 # Called when the node enters the scene tree for the first time.
-@onready var anim_player :AnimationPlayer = $AnimationPlayer
+@onready var anim_player: AnimationPlayer = $AnimationPlayer
 @onready var texture_rect = $TextureRect
-@export var spawn_scene : PackedScene
-@export var reset_level : bool = true  # Keep this true to reset enemies when respawning
+@export var spawn_scene: PackedScene
+@export var reset_level: bool = true # Keep this true to reset enemies when respawning
 @onready var audio_stream_player = $AudioStreamPlayer
 @onready var flame_particles = $FlameParticles
 @onready var interact_type = "SPAWN"
-@export var is_bonfire: bool = true  # Whether this spawn site acts as a bonfire (save point)
-@export var bonfire_id: String = ""  # Unique identifier for this bonfire
+@export var is_bonfire: bool = true
+@export var bonfire_id: String = ""
 
 func _ready():
 	add_to_group("interactable")
@@ -24,42 +24,22 @@ func _ready():
 	if bonfire_id.is_empty():
 		# Use the position as part of the ID to make it unique
 		bonfire_id = "bonfire_" + str(get_instance_id()) + "_" + str(global_position.x).substr(0, 4) + "_" + str(global_position.z).substr(0, 4)
-		print("Generated bonfire ID: " + bonfire_id + " at position: " + str(global_position))
 
-	# Print the bonfire ID for debugging
-	print("SpawnSite: Bonfire initialized with ID: " + bonfire_id + " at position: " + str(global_position))
-
-# Return the bonfire ID for use by the SaveManager
-func get_bonfire_id() -> String:
-	return bonfire_id
+	# Check if this is the last bonfire the player visited
+	if bonfire_id == SaveManager.last_bonfire_id:
+		# Wait for the scene to be fully loaded
+		call_deferred("position_player_at_bonfire")
 
 func activate(player: CharacterBody3D):
-	# Set this as the last bonfire if it's a bonfire
 	if is_bonfire:
-		print("Activating bonfire with ID: " + bonfire_id)
-
-		# Save this bonfire as the last one visited
-		print("SpawnSite: Setting last bonfire - ID: " + bonfire_id)
 		var scene_path = get_tree().current_scene.scene_file_path
 
-		# Ensure the bonfire ID is not empty
 		if bonfire_id.is_empty():
 			push_error("SpawnSite: Bonfire ID is empty! Generating a new one.")
 			bonfire_id = "bonfire_" + str(get_instance_id()) + "_" + str(global_position.x).substr(0, 4) + "_" + str(global_position.z).substr(0, 4)
-			print("SpawnSite: Generated new bonfire ID: " + bonfire_id)
 
-		# Save the bonfire data directly to the config file
 		SaveManager.last_bonfire_id = bonfire_id
 		SaveManager.last_bonfire_scene = scene_path
-		SaveManager._save_config()
-
-		# Double-check that the config was saved correctly by reloading it
-		SaveManager._load_config()
-
-		# Verify the data was saved correctly
-		print("SpawnSite: Verifying bonfire data after save:")
-		print("  - ID: " + str(SaveManager.last_bonfire_id))
-		print("  - Scene: " + SaveManager.last_bonfire_scene)
 
 		# Heal the player when they rest at a bonfire
 		if player.health_system:
@@ -72,30 +52,20 @@ func activate(player: CharacterBody3D):
 
 		# Play the animation
 		player.trigger_interact(interact_type)
-		anim_player.play("respawn",.2)
+		anim_player.play("respawn", .2)
 
 		# Wait for animation to finish
 		await anim_player.animation_finished
 
-		# Make sure the bonfire data is saved to the config file again
-		print("SpawnSite: Ensuring bonfire data is saved to config")
-		SaveManager._save_config()
-
 		# Auto-save the game AFTER animation finishes
-		print("SpawnSite: Saving game after bonfire interaction")
-
 		# Explicitly emit the save icon shown signal
 		SaveManager.save_icon_shown.emit()
 
 		# Save the game directly
 		var save_success = await SaveManager.save_game(SaveManager.current_save_slot)
-		print("SpawnSite: Save result: " + str(save_success))
 
 		# Make sure the save icon is hidden
 		SaveManager.save_icon_hidden.emit()
-
-		# Force a save config update to ensure the bonfire data is saved
-		SaveManager._save_config()
 
 		# Wait a moment to ensure the save is complete
 		await get_tree().create_timer(0.5).timeout
@@ -110,12 +80,10 @@ func activate(player: CharacterBody3D):
 
 	# For non-bonfire spawn sites, continue with the original behavior
 	player.trigger_interact(interact_type)
-	anim_player.play("respawn",.2)
+	anim_player.play("respawn", .2)
 	await anim_player.animation_finished
 	player.queue_free()
 
-
-# Activate the bonfire visually without player interaction
 func activate_visually():
 	if is_bonfire and flame_particles:
 		# Make sure the flame particles are active
@@ -125,36 +93,43 @@ func activate_visually():
 		if audio_stream_player and !audio_stream_player.playing:
 			audio_stream_player.play()
 
-		print("SpawnSite: Bonfire " + bonfire_id + " activated visually")
+func position_player_at_bonfire():
+	# Wait a moment for the scene to fully load
+	await get_tree().create_timer(0.5).timeout
+
+	# Find the player
+	var player = get_tree().get_first_node_in_group("player")
+
+	if player == null:
+		return
+
+	# Position the player at this bonfire
+	player.global_position = global_position
+
+	# Activate the bonfire visually
+	activate_visually()
+
+	# Reset player health and stamina
+	if player.health_system:
+		player.health_system.current_health = player.health_system.total_health
+		player.health_system.health_updated.emit(player.health_system.current_health)
+
+	if player.stamina_system:
+		player.stamina_system.current_stamina = player.stamina_system.total_stamina
+		player.stamina_system.stamina_updated.emit(player.stamina_system.current_stamina)
 
 func respawn():
-	# This function is called when a player interacts with the bonfire
-	# For respawning after death, SaveManager.respawn_at_last_bonfire() is used instead
-
-	# We need to make sure the current bonfire ID is saved as the last bonfire
-	# This is critical for ensuring we respawn at the correct bonfire
-	print("SpawnSite: Respawning at bonfire ID: " + bonfire_id)
-
-	# Force update the SaveManager with this bonfire's data
+	# Update the SaveManager with this bonfire's data
 	SaveManager.last_bonfire_id = bonfire_id
 	SaveManager.last_bonfire_scene = get_tree().current_scene.scene_file_path
 
-	# Save the config to ensure this data persists
-	SaveManager._save_config()
-
-	# Print the current bonfire data for debugging
-	print("SpawnSite: Respawning with bonfire data:")
-	print("  - ID: " + SaveManager.last_bonfire_id)
-	print("  - Scene: " + SaveManager.last_bonfire_scene)
-
 	if reset_level:
-		# Instead of handling the respawn ourselves, use SaveManager's respawn function
-		# This ensures consistent behavior between resting at a bonfire and respawning after death
-		SaveManager.respawn_at_last_bonfire()
+		# Reload the current scene to reset enemies
+		get_tree().reload_current_scene()
 	else:
 		# This branch is used if you want to keep the world state when resting at a bonfire
 		if spawn_scene:
-			var new_scene : CharacterBody3D = spawn_scene.instantiate()
+			var new_scene: CharacterBody3D = spawn_scene.instantiate()
 			add_sibling(new_scene)
 			var new_translation = global_transform.translated_local(Vector3.BACK)
 			await get_tree().process_frame

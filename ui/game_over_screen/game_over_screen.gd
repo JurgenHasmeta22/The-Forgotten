@@ -58,16 +58,13 @@ func _on_respawn_button_pressed():
 		# If no bonfire has been visited, just reload the current scene
 		get_tree().reload_current_scene()
 	else:
-		# Make sure the bonfire data is loaded from config
-		SaveManager._load_config()
-
 		# Print the current bonfire data for debugging
 		print("Game Over: Respawning at bonfire:")
 		print("  - ID: " + SaveManager.last_bonfire_id)
 		print("  - Scene: " + SaveManager.last_bonfire_scene)
 
-		# Use the SaveManager's respawn function to ensure consistent behavior
-		SaveManager.respawn_at_last_bonfire()
+		# Load the scene where the last bonfire is located
+		GameManager.change_scene_with_loading(SaveManager.last_bonfire_scene)
 
 # Unmute all gameplay sounds
 func unmute_gameplay_sounds():
