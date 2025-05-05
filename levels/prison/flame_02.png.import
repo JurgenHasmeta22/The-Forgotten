@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c20aj5kavxwu2"
-path.s3tc="res://.godot/imported/flame_02.png-f61c0dc0f3868ac84e2576afd405ddab.s3tc.ctex"
+path.s3tc="res://.godot/imported/flame_02.png-27998164ca39c8d7fbde1a60190da52f.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -12,7 +12,7 @@ metadata={
 [deps]
 
 source_file="res://levels/prison/flame_02.png"
-dest_files=["res://.godot/imported/flame_02.png-f61c0dc0f3868ac84e2576afd405ddab.s3tc.ctex"]
+dest_files=["res://.godot/imported/flame_02.png-27998164ca39c8d7fbde1a60190da52f.s3tc.ctex"]
 
 [params]
 

@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b0bhma25gxlxd"
-path.s3tc="res://.godot/imported/TinyRock01_albedo.png-055a55a4faea46e432f16034983cd98e.s3tc.ctex"
+path.s3tc="res://.godot/imported/TinyRock01_albedo.png-e811f44ec3e2e7e69301b3335f24f757.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -12,7 +12,7 @@ metadata={
 [deps]
 
 source_file="res://levels/prison/gridmap/gridmap_materials/TinyRock01_albedo.png"
-dest_files=["res://.godot/imported/TinyRock01_albedo.png-055a55a4faea46e432f16034983cd98e.s3tc.ctex"]
+dest_files=["res://.godot/imported/TinyRock01_albedo.png-e811f44ec3e2e7e69301b3335f24f757.s3tc.ctex"]
 
 [params]
 

@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dra4lm1m2ng"
-path.s3tc="res://.godot/imported/TinyBrick02_normal.png-58c0713733f30d736779f015fb68389b.s3tc.ctex"
+path.s3tc="res://.godot/imported/TinyBrick02_normal.png-3c6baf2de0de5c7eb6f76245ddd14be4.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -12,7 +12,7 @@ metadata={
 [deps]
 
 source_file="res://levels/prison/gridmap/gridmap_materials/TinyBrick02_normal.png"
-dest_files=["res://.godot/imported/TinyBrick02_normal.png-58c0713733f30d736779f015fb68389b.s3tc.ctex"]
+dest_files=["res://.godot/imported/TinyBrick02_normal.png-3c6baf2de0de5c7eb6f76245ddd14be4.s3tc.ctex"]
 
 [params]
 
