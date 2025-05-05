@@ -1,6 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://c3kboeik8njxy"]
+[gd_scene load_steps=11 format=3 uid="uid://c3kboeik8njxy"]
 
 [ext_resource type="Script" path="res://ui/game_over_screen/game_over_screen.gd" id="1_ixnqm"]
+[ext_resource type="AudioStream" uid="uid://bjhg7ssm2k606" path="res://audio/SoundFX/voice/voice_hurt_05.wav" id="2_sound"]
 
 [sub_resource type="Gradient" id="Gradient_bg"]
 offsets = PackedFloat32Array(0, 1)
@@ -192,6 +193,12 @@ libraries = {
 "fade_in": SubResource("Animation_fade")
 }
 }
+
+[node name="DeathSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_sound")
+volume_db = -5.0
+autoplay = true
+bus = &"Echo"
 
 [connection signal="pressed" from="VBoxContainer/ButtonsContainer/RespawnButton" to="." method="_on_respawn_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/ButtonsContainer/QuitButton" to="." method="_on_quit_button_pressed"]

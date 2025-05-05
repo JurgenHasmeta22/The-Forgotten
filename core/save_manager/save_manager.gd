@@ -265,6 +265,28 @@ func set_last_bonfire(bonfire_id: String, scene: String = "") -> void:
 # endregion
 
 # region "Game state tracking functions"
+func delete_save(slot: int) -> bool:
+	if slot <= 0 or slot > MAX_SAVE_SLOTS:
+		push_error("SaveManager: Invalid save slot: " + str(slot))
+		return false
+
+	if !save_exists(slot):
+		push_error("SaveManager: No save file exists in slot " + str(slot))
+		return false
+
+	var save_path = get_save_path(slot)
+	var dir = DirAccess.open(SAVE_DIR)
+
+	if dir.file_exists(save_path.get_file()):
+		var err = dir.remove(save_path.get_file())
+		if err != OK:
+			push_error("SaveManager: Failed to delete save file: " + save_path)
+			return false
+		print("SaveManager: Successfully deleted save file in slot " + str(slot))
+		return true
+
+	return false
+
 func add_defeated_enemy(enemy_id: String) -> void:
 	if "game_state" not in data:
 		data["game_state"] = {

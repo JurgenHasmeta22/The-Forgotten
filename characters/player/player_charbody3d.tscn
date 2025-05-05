@@ -1616,11 +1616,6 @@ cache/0/100/0/kerning_overrides/16/0 = Vector2(0, 0)
 cache/0/100/0/kerning_overrides/148/0 = Vector2(0, 0)
 cache/0/100/0/kerning_overrides/100/0 = Vector2(0, 0)
 
-[sub_resource type="LabelSettings" id="LabelSettings_84r12"]
-font = SubResource("FontFile_hhqnr")
-font_size = 100
-font_color = Color(0.278431, 0.54902, 0.74902, 1)
-
 [sub_resource type="Curve" id="Curve_htgjc"]
 _data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.512821, 1), 0.0, 0.0, 0, 0, Vector2(0.958974, 0), 0.0, 0.0, 0, 0]
 point_count = 3
@@ -2357,22 +2352,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("GradientTexture1D_1d04r")
-
-[node name="Label" type="Label" parent="TriggeredSounds/LifeCardAnimations/DeadBackground"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -286.0
-offset_top = -50.5
-offset_right = 286.0
-offset_bottom = 50.5
-grow_horizontal = 2
-grow_vertical = 2
-text = "GAME OVER"
-label_settings = SubResource("LabelSettings_84r12")
 
 [node name="AmbientParticles" type="GPUParticles3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)

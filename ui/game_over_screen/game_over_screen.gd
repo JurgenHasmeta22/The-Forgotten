@@ -3,6 +3,7 @@ extends Control
 @onready var respawn_button = $VBoxContainer/ButtonsContainer/RespawnButton
 @onready var quit_button = $VBoxContainer/ButtonsContainer/QuitButton
 @onready var animation_player = $AnimationPlayer
+@onready var death_sound = $DeathSound
 
 func _ready():
 	# Set focus to the respawn button
@@ -21,16 +22,23 @@ func _ready():
 		# If animation doesn't exist, just set the modulate directly
 		modulate = Color(1, 1, 1, 1)
 
-# Mute all gameplay sounds
+# Mute all gameplay sounds except the death sound
 func mute_gameplay_sounds():
 	# Get the master audio bus index
 	var master_idx = AudioServer.get_bus_index("Master")
+
+	# Get the echo bus index (used for the death sound)
+	var echo_idx = AudioServer.get_bus_index("Echo")
 
 	# Store the current volume to restore later if needed
 	var _current_volume = AudioServer.get_bus_volume_db(master_idx)
 
 	# Mute the master bus (affects all sounds)
 	AudioServer.set_bus_mute(master_idx, true)
+
+	# Make sure the Echo bus is not muted so our death sound plays
+	if echo_idx >= 0:
+		AudioServer.set_bus_mute(echo_idx, false)
 
 func _input(event):
 	if visible:
