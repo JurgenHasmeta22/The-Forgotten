@@ -11,7 +11,7 @@ metadata={
 
 [deps]
 
-source_file="res://demo_level/gridmap/gridmap_materials/TinyTile01_albedo.png"
+source_file="res://levels/prison/gridmap/gridmap_materials/TinyTile01_albedo.png"
 dest_files=["res://.godot/imported/TinyTile01_albedo.png-c22ccaec44bca188e311840ccfeb10f8.s3tc.ctex"]
 
 [params]

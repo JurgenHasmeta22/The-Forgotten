@@ -11,7 +11,7 @@ metadata={
 
 [deps]
 
-source_file="res://demo_level/gridmap/gridmap_materials/TinyWood03_normal.png"
+source_file="res://levels/prison/gridmap/gridmap_materials/TinyWood03_normal.png"
 dest_files=["res://.godot/imported/TinyWood03_normal.png-3781289a1688b97f5eac4f8bc23933fb.s3tc.ctex"]
 
 [params]

@@ -1,9 +1,9 @@
 [gd_scene load_steps=10 format=3 uid="uid://bbhrq4snasi1i"]
 
-[ext_resource type="Material" uid="uid://cfcu07lbei0iy" path="res://demo_level/gridmap/gridmap_materials/TinyRock01.tres" id="1_nbk1i"]
-[ext_resource type="MeshLibrary" uid="uid://2r5u127xsshq" path="res://demo_level/gridmap/gridmap_basic.tres" id="1_vejrx"]
-[ext_resource type="PackedScene" uid="uid://dwi6wppkvd4nl" path="res://demo_level/torch.tscn" id="4_32otp"]
-[ext_resource type="Material" uid="uid://b4m1mgfioqq2s" path="res://demo_level/gridmap/gridmap_materials/TinyWood01.tres" id="9_ajn22"]
+[ext_resource type="Material" uid="uid://cfcu07lbei0iy" path="res://levels/prison/gridmap/gridmap_materials/TinyRock01.tres" id="1_nbk1i"]
+[ext_resource type="MeshLibrary" uid="uid://2r5u127xsshq" path="res://levels/prison/gridmap/gridmap_basic.tres" id="1_vejrx"]
+[ext_resource type="PackedScene" uid="uid://dwi6wppkvd4nl" path="res://levels/prison/torch.tscn" id="4_32otp"]
+[ext_resource type="Material" uid="uid://b4m1mgfioqq2s" path="res://levels/prison/gridmap/gridmap_materials/TinyWood01.tres" id="9_ajn22"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_n8eyr"]
 size = Vector3(37.155, 0.1, 40.145)

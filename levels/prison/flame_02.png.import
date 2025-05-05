@@ -11,7 +11,7 @@ metadata={
 
 [deps]
 
-source_file="res://demo_level/flame_02.png"
+source_file="res://levels/prison/flame_02.png"
 dest_files=["res://.godot/imported/flame_02.png-f61c0dc0f3868ac84e2576afd405ddab.s3tc.ctex"]
 
 [params]

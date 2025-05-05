@@ -1,12 +1,12 @@
 [gd_resource type="MeshLibrary" load_steps=193 format=4 uid="uid://2r5u127xsshq"]
 
-[ext_resource type="Material" uid="uid://b87ja3jul5hmt" path="res://demo_level/gridmap/gridmap_materials/TinyBrick01.tres" id="1_3ppcx"]
-[ext_resource type="Material" uid="uid://c2o1mxvq006x2" path="res://demo_level/gridmap/gridmap_materials/TinyBrick02.tres" id="2_cuoen"]
-[ext_resource type="Material" uid="uid://cu03ebydk057a" path="res://demo_level/gridmap/gridmap_materials/TinyBrick03.tres" id="3_harh7"]
-[ext_resource type="Material" uid="uid://cfcu07lbei0iy" path="res://demo_level/gridmap/gridmap_materials/TinyRock01.tres" id="4_miir8"]
-[ext_resource type="Material" uid="uid://cfnff53sw0hgk" path="res://demo_level/gridmap/gridmap_materials/TinyTile01.tres" id="5_o0inr"]
-[ext_resource type="Material" uid="uid://b4m1mgfioqq2s" path="res://demo_level/gridmap/gridmap_materials/TinyWood01.tres" id="6_7bb05"]
-[ext_resource type="Material" uid="uid://pw0qjru3ju6a" path="res://demo_level/gridmap/gridmap_materials/TinyMetal01.tres" id="7_m8fyl"]
+[ext_resource type="Material" uid="uid://b87ja3jul5hmt" path="res://levels/prison/gridmap/gridmap_materials/TinyBrick01.tres" id="1_3ppcx"]
+[ext_resource type="Material" uid="uid://c2o1mxvq006x2" path="res://levels/prison/gridmap/gridmap_materials/TinyBrick02.tres" id="2_cuoen"]
+[ext_resource type="Material" uid="uid://cu03ebydk057a" path="res://levels/prison/gridmap/gridmap_materials/TinyBrick03.tres" id="3_harh7"]
+[ext_resource type="Material" uid="uid://cfcu07lbei0iy" path="res://levels/prison/gridmap/gridmap_materials/TinyRock01.tres" id="4_miir8"]
+[ext_resource type="Material" uid="uid://cfnff53sw0hgk" path="res://levels/prison/gridmap/gridmap_materials/TinyTile01.tres" id="5_o0inr"]
+[ext_resource type="Material" uid="uid://b4m1mgfioqq2s" path="res://levels/prison/gridmap/gridmap_materials/TinyWood01.tres" id="6_7bb05"]
+[ext_resource type="Material" uid="uid://pw0qjru3ju6a" path="res://levels/prison/gridmap/gridmap_materials/TinyMetal01.tres" id="7_m8fyl"]
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_t6aj7"]
 _surfaces = [{

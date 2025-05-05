@@ -8,7 +8,7 @@ path="res://.godot/imported/tilemap_basic.glb-762e5ddc78933065823fa4dee9536707.s
 
 [deps]
 
-source_file="res://demo_level/gridmap/tilemap_basic.glb"
+source_file="res://levels/prison/gridmap/tilemap_basic.glb"
 dest_files=["res://.godot/imported/tilemap_basic.glb-762e5ddc78933065823fa4dee9536707.scn"]
 
 [params]
