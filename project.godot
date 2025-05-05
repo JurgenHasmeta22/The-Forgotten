@@ -15,7 +15,7 @@ config/description="Third person ARPG Soulslike"
 config/version="0.0.1"
 run/main_scene="res://ui/start_menu.tscn"
 config/features=PackedStringArray("4.4", "GL Compatibility")
-config/icon="res://icon.png"
+config/icon="res://assets/icon.png"
 
 [audio]
 
@@ -23,8 +23,8 @@ buses/default_bus_layout="res://audio/default_bus_layout.tres"
 
 [autoload]
 
-GameManager="*res://game_manager.gd"
-SaveSystem="*res://save_system.gd"
+GameManager="*res://core/game_manager/game_manager.gd"
+SaveSystem="*res://player/save_system/save_system.gd"
 
 [display]
 
