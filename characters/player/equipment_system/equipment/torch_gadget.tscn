@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://cgxcgxvgwlqvl" path="res://characters/player/equipment_system/equipment/equipment_object.gd" id="1_daoms"]
 [ext_resource type="AudioStream" uid="uid://bd7r1x1qj66kq" path="res://audio/SoundFX/fire/fire_01_loop.wav" id="2_1xq1v"]
 [ext_resource type="Script" uid="uid://breny87oa5cf8" path="res://characters/player/equipment_system/equipment/equipment_resource.gd" id="2_j2csv"]
-[ext_resource type="Script" uid="uid://dqim8voryt024" path="res://utility scripts/signal_switch.gd" id="2_uorbh"]
+[ext_resource type="Script" uid="uid://dqim8voryt024" path="res://utilities/signal_switch.gd" id="2_uorbh"]
 
 [sub_resource type="Resource" id="Resource_hoj8b"]
 script = ExtResource("2_j2csv")
