@@ -665,10 +665,6 @@ func save():
 	var save_dict = {
 		"filename": get_scene_file_path(),
 		"parent": get_parent().get_path(),
-		"pos_x": global_position.x,
-		"pos_y": global_position.y,
-		"pos_z": global_position.z,
-		"rotation": global_rotation.y,
 		"is_player": true,  # Flag to identify this as the player
 
 		# Health and stamina

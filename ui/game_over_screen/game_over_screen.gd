@@ -64,7 +64,6 @@ func _on_respawn_button_pressed():
 		# Print the current bonfire data for debugging
 		print("Game Over: Respawning at bonfire:")
 		print("  - ID: " + SaveManager.last_bonfire_id)
-		print("  - Position: " + str(SaveManager.last_bonfire_position))
 		print("  - Scene: " + SaveManager.last_bonfire_scene)
 
 		# Use the SaveManager's respawn function to ensure consistent behavior

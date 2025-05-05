@@ -264,10 +264,6 @@ func save():
 	var save_dict = {
 		"filename": scene_file_path,
 		"parent": get_parent().get_path(),
-		"pos_x": global_position.x,
-		"pos_y": global_position.y,
-		"pos_z": global_position.z,
-		"rotation": global_rotation.y,
 
 		# Health
 		"health": health_system.current_health if health_system else 0,
@@ -278,15 +274,11 @@ func save():
 		"aggro_state": current_state,
 	}
 
-	# Add target position if target is valid
-	if is_instance_valid(target):
-		save_dict["target_position"] = {
-			"x": target.global_position.x,
-			"y": target.global_position.y,
-			"z": target.global_position.z
-		}
+	# Add target ID if target is valid
+	if is_instance_valid(target) and target.is_in_group("player"):
+		save_dict["has_player_target"] = true
 	else:
-		save_dict["target_position"] = null
+		save_dict["has_player_target"] = false
 
 	# Add other properties
 	save_dict["enemy_type"] = group_name

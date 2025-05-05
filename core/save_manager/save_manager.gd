@@ -19,9 +19,8 @@ const CURRENT_SAVE_VERSION = 1
 var current_save_slot = 1
 var is_saving = false
 var is_loading = false
-var last_bonfire_position = Vector3.ZERO
-var last_bonfire_scene = ""
 var last_bonfire_id = "" # Unique identifier for the last bonfire used
+var last_bonfire_scene = "" # Scene path where the bonfire is located
 
 func _ready():
 	print("SaveManager: Initializing...")
@@ -50,14 +49,10 @@ func _load_config() -> void:
 
 			# Load the last bonfire data
 			if config.has_section("bonfire"):
-				last_bonfire_position.x = config.get_value("bonfire", "position_x", 0.0)
-				last_bonfire_position.y = config.get_value("bonfire", "position_y", 0.0)
-				last_bonfire_position.z = config.get_value("bonfire", "position_z", 0.0)
 				last_bonfire_id = config.get_value("bonfire", "id", "")
 				last_bonfire_scene = config.get_value("bonfire", "scene", "")
 
 				print("SaveManager: Loaded bonfire data from config:")
-				print("  - Position: " + str(last_bonfire_position))
 				print("  - ID: " + last_bonfire_id)
 				print("  - Scene: " + last_bonfire_scene)
 		else:
@@ -71,9 +66,6 @@ func _save_config() -> void:
 	config.set_value("save", "last_slot", current_save_slot)
 
 	# Save the last bonfire data
-	config.set_value("bonfire", "position_x", last_bonfire_position.x)
-	config.set_value("bonfire", "position_y", last_bonfire_position.y)
-	config.set_value("bonfire", "position_z", last_bonfire_position.z)
 	config.set_value("bonfire", "id", last_bonfire_id)
 	config.set_value("bonfire", "scene", last_bonfire_scene)
 
@@ -101,9 +93,9 @@ func save_game(slot: int = current_save_slot) -> bool:
 	_save_config()
 
 	# Make sure we have valid bonfire data
-	if last_bonfire_position == Vector3.ZERO or last_bonfire_id.is_empty() or last_bonfire_scene.is_empty():
+	if last_bonfire_id.is_empty() or last_bonfire_scene.is_empty():
 		push_warning("SaveManager: Saving game with incomplete bonfire data. This may cause issues with respawning.")
-		print("SaveManager: Bonfire data - Position: " + str(last_bonfire_position) + ", ID: " + last_bonfire_id + ", Scene: " + last_bonfire_scene)
+		print("SaveManager: Bonfire data - ID: " + last_bonfire_id + ", Scene: " + last_bonfire_scene)
 
 		# Try to find a valid bonfire in the current scene
 		var bonfires = get_tree().get_nodes_in_group("interactable")
@@ -113,14 +105,12 @@ func save_game(slot: int = current_save_slot) -> bool:
 				if !bonfire_id.is_empty():
 					print("SaveManager: Found valid bonfire with ID: " + bonfire_id + ", using it for save")
 					last_bonfire_id = bonfire_id
-					last_bonfire_position = bonfire.global_position
 					last_bonfire_scene = get_tree().current_scene.scene_file_path
 					_save_config()
 					break
 
 	# Log the bonfire information being saved
 	print("Saving game with bonfire data:")
-	print("- Position: " + str(last_bonfire_position))
 	print("- Scene: " + last_bonfire_scene)
 	print("- ID: " + last_bonfire_id)
 
@@ -129,13 +119,8 @@ func save_game(slot: int = current_save_slot) -> bool:
 		"version": CURRENT_SAVE_VERSION,
 		"timestamp": Time.get_unix_time_from_system(),
 		"scene": get_tree().current_scene.scene_file_path,
-		"last_bonfire_position": {
-			"x": last_bonfire_position.x,
-			"y": last_bonfire_position.y,
-			"z": last_bonfire_position.z
-		},
-		"last_bonfire_scene": last_bonfire_scene,
 		"last_bonfire_id": last_bonfire_id,
+		"last_bonfire_scene": last_bonfire_scene,
 	}
 
 	# Add player data directly to ensure there's always something to save
@@ -146,11 +131,6 @@ func save_game(slot: int = current_save_slot) -> bool:
 			"is_player": true,
 			"level": 1,
 			"playtime": 0,
-			"position": {
-				"x": player.global_position.x,
-				"y": player.global_position.y,
-				"z": player.global_position.z
-			},
 			"scene_path": player.get_scene_file_path(),
 			"parent_path": player.get_parent().get_path()
 		}
@@ -209,9 +189,6 @@ func save_game(slot: int = current_save_slot) -> bool:
 				var basic_player_data = {
 					"filename": node.get_scene_file_path(),
 					"parent": node.get_parent().get_path(),
-					"pos_x": node.global_position.x,
-					"pos_y": node.global_position.y,
-					"pos_z": node.global_position.z,
 					"is_player": true
 				}
 				nodes_data.append(basic_player_data)
@@ -356,21 +333,13 @@ func load_game(slot: int = current_save_slot) -> bool:
 		return false
 
 	# Store the last bonfire data
-	if game_state.has("last_bonfire_position"):
-		last_bonfire_position = Vector3(
-			game_state["last_bonfire_position"]["x"],
-			game_state["last_bonfire_position"]["y"],
-			game_state["last_bonfire_position"]["z"]
-		)
-		print("Loaded last bonfire position: " + str(last_bonfire_position))
+	if game_state.has("last_bonfire_id"):
+		last_bonfire_id = game_state["last_bonfire_id"]
+		print("Loaded last bonfire ID: " + last_bonfire_id)
 
 	if game_state.has("last_bonfire_scene"):
 		last_bonfire_scene = game_state["last_bonfire_scene"]
 		print("Loaded last bonfire scene: " + last_bonfire_scene)
-
-	if game_state.has("last_bonfire_id"):
-		last_bonfire_id = game_state["last_bonfire_id"]
-		print("Loaded last bonfire ID: " + last_bonfire_id)
 
 	# Create a callback to restore the game state after the scene is loaded
 	var restore_game_state_callback = func():
@@ -394,10 +363,6 @@ func load_game(slot: int = current_save_slot) -> bool:
 		# Find the player before instantiating other nodes
 		var player = get_tree().get_first_node_in_group("player")
 		if player:
-			# Position the player at the last bonfire
-			player.global_position = last_bonfire_position
-			print("SaveManager: Positioned player at last bonfire: " + str(last_bonfire_position))
-
 			# Reset player health and stamina
 			if player.health_system:
 				player.health_system.current_health = player.health_system.total_health
@@ -438,11 +403,17 @@ func load_game(slot: int = current_save_slot) -> bool:
 					print("SaveManager: Interactable doesn't have get_bonfire_id method: " + bonfire.name)
 
 			if !found_matching_bonfire:
-				push_warning("SaveManager: Could not find matching bonfire in scene, using saved position instead")
+				push_warning("SaveManager: Could not find matching bonfire in scene, using default spawn position")
 
-				# As a fallback, position the player at the saved position
-				player.global_position = last_bonfire_position
-				print("SaveManager: Positioned player at saved position: " + str(last_bonfire_position))
+				# As a fallback, position the player at a default spawn position
+				var default_spawn = get_tree().get_first_node_in_group("player_spawn")
+				if default_spawn:
+					player.global_position = default_spawn.global_position
+					print("SaveManager: Positioned player at default spawn: " + str(default_spawn.global_position))
+				else:
+					# If no spawn point is found, use a safe position like (0, 0, 0)
+					player.global_position = Vector3(0, 0, 0)
+					print("SaveManager: Positioned player at origin as fallback")
 		else:
 			push_error("SaveManager: Player not found after loading scene")
 
@@ -473,15 +444,12 @@ func load_game(slot: int = current_save_slot) -> bool:
 
 				parent_node.add_child(new_object)
 
-				# Set position for 2D or 3D nodes
-				if new_object is Node2D:
-					new_object.position = Vector2(node_data["pos_x"], node_data["pos_y"])
-				elif new_object is Node3D:
-					new_object.position = Vector3(node_data["pos_x"], node_data["pos_y"], node_data["pos_z"])
+				# We don't set position here anymore - positions are handled by the bonfire system
+				# or by the specific node's save/load logic
 
 				# Set all the remaining properties
 				for property in node_data.keys():
-					if property == "filename" or property == "parent" or property == "pos_x" or property == "pos_y" or property == "pos_z":
+					if property == "filename" or property == "parent":
 						continue
 
 					# Use set() to restore the property
@@ -659,12 +627,11 @@ func delete_save(slot: int) -> bool:
 	var err = dir.remove(save_path.get_file())
 	return err == OK
 
-# Set the last bonfire position and scene (called when player interacts with a bonfire)
-func set_last_bonfire(position: Vector3, bonfire_id: String, scene: String = "") -> void:
-	print("SaveManager: Setting last bonfire - Position: " + str(position) + ", ID: " + bonfire_id)
+# Set the last bonfire ID and scene (called when player interacts with a bonfire)
+func set_last_bonfire(bonfire_id: String, scene: String = "") -> void:
+	print("SaveManager: Setting last bonfire - ID: " + bonfire_id)
 
 	# Always update the bonfire data to ensure it's correctly saved
-	last_bonfire_position = position
 	last_bonfire_id = bonfire_id
 
 	if scene.is_empty():
@@ -682,7 +649,6 @@ func set_last_bonfire(position: Vector3, bonfire_id: String, scene: String = "")
 
 	# Verify the data was saved correctly
 	print("SaveManager: Verifying bonfire data after save:")
-	print("  - Position: " + str(last_bonfire_position))
 	print("  - ID: " + last_bonfire_id)
 	print("  - Scene: " + last_bonfire_scene)
 
@@ -694,21 +660,23 @@ func respawn_at_last_bonfire() -> void:
 	# Make sure we have the latest bonfire data from the config file
 	_load_config()
 
-	if last_bonfire_scene.is_empty() or last_bonfire_position == Vector3.ZERO or last_bonfire_id.is_empty():
+	if last_bonfire_scene.is_empty() or last_bonfire_id.is_empty():
 		push_error("No valid bonfire data for respawn")
 		return
 
-	print("SaveManager: Respawning at bonfire: ID=" + last_bonfire_id + ", Position=" + str(last_bonfire_position) + ", Scene=" + last_bonfire_scene)
+	print("SaveManager: Respawning at bonfire: ID=" + last_bonfire_id + ", Scene=" + last_bonfire_scene)
 
 	# Debug: Print all bonfire IDs in the current scene to help diagnose issues
 	var current_bonfires = get_tree().get_nodes_in_group("interactable")
 	print("SaveManager: Current scene has " + str(current_bonfires.size()) + " interactables")
+
+	# Log all bonfires in the scene for debugging
 	for bonfire in current_bonfires:
 		if bonfire.has_method("get_bonfire_id"):
-			print("SaveManager: Found bonfire with ID: " + bonfire.get_bonfire_id() + " at position: " + str(bonfire.global_position))
+			var found_id = bonfire.get_bonfire_id()
+			print("SaveManager: Found bonfire with ID: " + found_id + " at position: " + str(bonfire.global_position))
 
-	# Store the position locally to avoid accessing freed objects
-	var respawn_position = last_bonfire_position
+	# Store the data locally to avoid accessing freed objects
 	var respawn_scene = last_bonfire_scene
 	var respawn_bonfire_id = last_bonfire_id
 
@@ -740,19 +708,8 @@ func respawn_at_last_bonfire() -> void:
 			player = get_tree().get_first_node_in_group("player")
 
 			if player:
-				# Position the player at the bonfire
-				player.global_position = respawn_position
-				print("SaveManager: Player positioned at bonfire: " + str(respawn_position))
-
-				# Reset player health and stamina
-				if player.health_system:
-					player.health_system.current_health = player.health_system.total_health
-					player.health_system.health_updated.emit(player.health_system.current_health)
-
-				if player.stamina_system:
-					player.stamina_system.current_stamina = player.stamina_system.total_stamina
-					player.stamina_system.stamina_updated.emit(player.stamina_system.current_stamina)
-
+				# We'll position the player after finding the bonfire
+				print("SaveManager: Found player, now looking for bonfire")
 				break
 			else:
 				print("SaveManager: Player not found, attempt " + str(current_attempt) + " of " + str(max_attempts))
@@ -761,6 +718,16 @@ func respawn_at_last_bonfire() -> void:
 
 		if player == null:
 			push_error("SaveManager: Failed to find player after respawn")
+			return
+
+		# Reset player health and stamina
+		if player.health_system:
+			player.health_system.current_health = player.health_system.total_health
+			player.health_system.health_updated.emit(player.health_system.current_health)
+
+		if player.stamina_system:
+			player.stamina_system.current_stamina = player.stamina_system.total_stamina
+			player.stamina_system.stamina_updated.emit(player.stamina_system.current_stamina)
 
 		# Find all bonfires in the scene
 		var bonfires = get_tree().get_nodes_in_group("interactable")
@@ -794,11 +761,18 @@ func respawn_at_last_bonfire() -> void:
 				print("SaveManager: Interactable doesn't have get_bonfire_id method: " + bonfire.name)
 
 		if !found_matching_bonfire:
-			push_warning("SaveManager: Could not find matching bonfire in scene, using saved position instead")
+			push_warning("SaveManager: Could not find matching bonfire in scene, using default spawn position")
 
-			# As a fallback, position the player at the saved position
-			player.global_position = respawn_position
-			print("SaveManager: Positioned player at saved position: " + str(respawn_position))
+			# As a fallback, position the player at a default spawn position
+			# This could be the scene's default spawn point or a fixed position
+			var default_spawn = get_tree().get_first_node_in_group("player_spawn")
+			if default_spawn:
+				player.global_position = default_spawn.global_position
+				print("SaveManager: Positioned player at default spawn: " + str(default_spawn.global_position))
+			else:
+				# If no spawn point is found, use a safe position like (0, 0, 0)
+				player.global_position = Vector3(0, 0, 0)
+				print("SaveManager: Positioned player at origin as fallback")
 
 	# Connect to the tree_changed signal to detect when the scene is loaded
 	get_tree().tree_changed.connect(position_player_callback, CONNECT_ONE_SHOT)

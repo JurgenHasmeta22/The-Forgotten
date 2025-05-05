@@ -36,12 +36,10 @@ func get_bonfire_id() -> String:
 func activate(player: CharacterBody3D):
 	# Set this as the last bonfire if it's a bonfire
 	if is_bonfire:
-		# Store the position in a local variable to ensure it's captured correctly
-		var bonfire_pos = global_position
-		print("Activating bonfire at position: " + str(bonfire_pos) + ", ID: " + bonfire_id)
+		print("Activating bonfire with ID: " + bonfire_id)
 
 		# Save this bonfire as the last one visited
-		print("SpawnSite: Setting last bonfire - ID: " + bonfire_id + ", Position: " + str(bonfire_pos))
+		print("SpawnSite: Setting last bonfire - ID: " + bonfire_id)
 		var scene_path = get_tree().current_scene.scene_file_path
 
 		# Ensure the bonfire ID is not empty
@@ -51,7 +49,6 @@ func activate(player: CharacterBody3D):
 			print("SpawnSite: Generated new bonfire ID: " + bonfire_id)
 
 		# Save the bonfire data directly to the config file
-		SaveManager.last_bonfire_position = bonfire_pos
 		SaveManager.last_bonfire_id = bonfire_id
 		SaveManager.last_bonfire_scene = scene_path
 		SaveManager._save_config()
@@ -61,7 +58,6 @@ func activate(player: CharacterBody3D):
 
 		# Verify the data was saved correctly
 		print("SpawnSite: Verifying bonfire data after save:")
-		print("  - Position: " + str(SaveManager.last_bonfire_position))
 		print("  - ID: " + str(SaveManager.last_bonfire_id))
 		print("  - Scene: " + SaveManager.last_bonfire_scene)
 
@@ -141,7 +137,6 @@ func respawn():
 
 	# Force update the SaveManager with this bonfire's data
 	SaveManager.last_bonfire_id = bonfire_id
-	SaveManager.last_bonfire_position = global_position
 	SaveManager.last_bonfire_scene = get_tree().current_scene.scene_file_path
 
 	# Save the config to ensure this data persists
@@ -150,7 +145,6 @@ func respawn():
 	# Print the current bonfire data for debugging
 	print("SpawnSite: Respawning with bonfire data:")
 	print("  - ID: " + SaveManager.last_bonfire_id)
-	print("  - Position: " + str(SaveManager.last_bonfire_position))
 	print("  - Scene: " + SaveManager.last_bonfire_scene)
 
 	if reset_level:
