@@ -136,9 +136,56 @@ func save_game(slot: int = current_save_slot) -> bool:
 		"last_bonfire_id": last_bonfire_id,
 	}
 
+	# Add player data directly to ensure there's always something to save
+	var player = get_tree().get_first_node_in_group("player")
+	if player:
+		# Create a basic player data entry
+		game_state["player"] = {
+			"is_player": true,
+			"level": 1,
+			"playtime": 0,
+			"position": {
+				"x": player.global_position.x,
+				"y": player.global_position.y,
+				"z": player.global_position.z
+			},
+			"scene_path": player.get_scene_file_path(),
+			"parent_path": player.get_parent().get_path()
+		}
+
+		# Add health and stamina if available
+		if player.health_system:
+			game_state["player"]["health"] = player.health_system.current_health
+			game_state["player"]["max_health"] = player.health_system.total_health
+
+		if player.stamina_system:
+			game_state["player"]["stamina"] = player.stamina_system.current_stamina
+			game_state["player"]["max_stamina"] = player.stamina_system.total_stamina
+	else:
+		# Fallback player data if no player is found
+		game_state["player"] = {
+			"is_player": true,
+			"level": 1,
+			"playtime": 0
+		}
+
 	# Get all nodes that need to be saved
 	var save_nodes = get_tree().get_nodes_in_group("Persist")
 	var nodes_data = []
+
+	print("SaveManager: Found " + str(save_nodes.size()) + " nodes in Persist group")
+
+	# Make sure the player is in the Persist group
+	var player_node = get_tree().get_first_node_in_group("player")
+	if player_node:
+		if !player_node.is_in_group("Persist"):
+			print("SaveManager: Player is not in Persist group, adding it now")
+			player_node.add_to_group("Persist")
+			# Refresh the list of nodes to save
+			save_nodes = get_tree().get_nodes_in_group("Persist")
+			print("SaveManager: After adding player, found " + str(save_nodes.size()) + " nodes in Persist group")
+	else:
+		print("SaveManager: Player not found in scene")
 
 	# Collect data from all persistent nodes
 	for node in save_nodes:
@@ -147,14 +194,34 @@ func save_game(slot: int = current_save_slot) -> bool:
 			print("Persistent node '%s' is not an instanced scene, skipped" % node.name)
 			continue
 
+		# Check if this is the player node
+		var is_player_node = node.is_in_group("player")
+
 		# Check the node has a save function
 		if !node.has_method("save"):
-			print("Persistent node '%s' is missing a save() function, skipped" % node.name)
+			print("Persistent node '%s' is missing a save() function" % node.name)
+
+			# If this is the player node, create a basic save data for it
+			if is_player_node:
+				print("SaveManager: Creating basic save data for player node")
+				var basic_player_data = {
+					"filename": node.get_scene_file_path(),
+					"parent": node.get_parent().get_path(),
+					"pos_x": node.global_position.x,
+					"pos_y": node.global_position.y,
+					"pos_z": node.global_position.z,
+					"is_player": true
+				}
+				nodes_data.append(basic_player_data)
+				print("SaveManager: Added basic player data")
+			else:
+				print("SaveManager: Node skipped")
 			continue
 
 		# Call the node's save function
 		var node_data = node.call("save")
 		nodes_data.append(node_data)
+		print("SaveManager: Saved data for node: " + node.name)
 
 	# Add nodes data to the game state
 	game_state["nodes"] = nodes_data
@@ -166,7 +233,7 @@ func save_game(slot: int = current_save_slot) -> bool:
 	print("SaveManager: Ensuring save directory exists at " + SAVE_DIR)
 	var dir = DirAccess.open("user://")
 	if dir == null:
-		push_error("SaveManager: Failed to open user:// directory")
+		push_error("SaveManager: Failed to open user:// directory - Error: " + str(FileAccess.get_open_error()))
 		is_saving = false
 		save_icon_hidden.emit()
 		return false
@@ -180,11 +247,21 @@ func save_game(slot: int = current_save_slot) -> bool:
 			save_icon_hidden.emit()
 			return false
 
+	# Double check the directory exists before trying to save
+	if not dir.dir_exists(SAVE_DIR.trim_suffix("/")):
+		push_error("SaveManager: Directory still doesn't exist after creation attempt: " + SAVE_DIR)
+		is_saving = false
+		save_icon_hidden.emit()
+		return false
+	else:
+		print("SaveManager: Confirmed saves directory exists at: " + SAVE_DIR)
+
 	print("SaveManager: Opening file for writing: " + save_path)
 	var save_file = FileAccess.open(save_path, FileAccess.WRITE)
 
 	if save_file == null:
-		push_error("Failed to open save file: " + save_path)
+		var error_code = FileAccess.get_open_error()
+		push_error("SaveManager: Failed to open save file: " + save_path + " - Error code: " + str(error_code))
 		is_saving = false
 		save_icon_hidden.emit()
 		return false
@@ -192,7 +269,9 @@ func save_game(slot: int = current_save_slot) -> bool:
 	# Convert the save data to JSON and save it
 	var json_string = JSON.stringify(game_state, "  ") # Pretty print with 2-space indentation
 	save_file.store_line(json_string)
-	print("Game saved to: " + save_path)
+	save_file.flush() # Ensure data is written to disk
+	save_file.close() # Explicitly close the file
+	print("SaveManager: Game saved to: " + save_path)
 
 	# Add a small delay to simulate saving process (optional)
 	await get_tree().create_timer(0.5).timeout
@@ -202,15 +281,35 @@ func save_game(slot: int = current_save_slot) -> bool:
 	save_icon_hidden.emit()
 
 	# Verify the save file was created
-	# Reuse the same save_path from above
 	if FileAccess.file_exists(save_path):
 		print("SaveManager: Save successful! File created at: " + save_path)
 		# Check if the save is now visible to the system
 		print("SaveManager: save_exists(" + str(slot) + ") returns: " + str(save_exists(slot)))
+
+		# Force refresh the start menu if we're in it
+		var start_menu = get_tree().get_first_node_in_group("start_menu")
+		if start_menu and start_menu.has_method("refresh_save_buttons"):
+			print("SaveManager: Refreshing start menu buttons")
+			start_menu.refresh_save_buttons()
 	else:
 		push_error("SaveManager: Save failed! File not found at: " + save_path)
+		# Try to diagnose the issue
+		print("SaveManager: Attempting to diagnose save failure...")
+		var test_path = "user://test_save.tmp"
+		var test_file = FileAccess.open(test_path, FileAccess.WRITE)
+		if test_file == null:
+			push_error("SaveManager: Failed to create test file at user:// - Error: " + str(FileAccess.get_open_error()))
+		else:
+			test_file.store_line("Test write")
+			test_file.close()
+			print("SaveManager: Successfully created test file at: " + test_path)
 
-	return true
+			# Try to clean up the test file
+			var test_dir = DirAccess.open("user://")
+			if test_dir != null:
+				test_dir.remove("test_save.tmp")
+
+	return FileAccess.file_exists(save_path)
 
 # Load a game from the specified slot
 func load_game(slot: int = current_save_slot) -> bool:
@@ -328,12 +427,22 @@ func load_game(slot: int = current_save_slot) -> bool:
 						# Update the player position to match the exact bonfire position
 						player.global_position = bonfire.global_position
 						print("SaveManager: Updated player position to exact bonfire position: " + str(bonfire.global_position))
+
+						# Activate the bonfire visually if possible
+						if bonfire.has_method("activate_visually"):
+							bonfire.activate_visually()
+							print("SaveManager: Activated bonfire visually")
+
 						break
 				else:
 					print("SaveManager: Interactable doesn't have get_bonfire_id method: " + bonfire.name)
 
 			if !found_matching_bonfire:
 				push_warning("SaveManager: Could not find matching bonfire in scene, using saved position instead")
+
+				# As a fallback, position the player at the saved position
+				player.global_position = last_bonfire_position
+				print("SaveManager: Positioned player at saved position: " + str(last_bonfire_position))
 		else:
 			push_error("SaveManager: Player not found after loading scene")
 
@@ -416,7 +525,7 @@ func save_exists(slot: int = current_save_slot) -> bool:
 	if !exists:
 		var dir = DirAccess.open("user://")
 		if dir == null:
-			push_error("SaveManager: Failed to open user:// directory")
+			push_error("SaveManager: Failed to open user:// directory - Error: " + str(FileAccess.get_open_error()))
 		else:
 			print("SaveManager: user:// directory exists")
 
@@ -428,7 +537,7 @@ func save_exists(slot: int = current_save_slot) -> bool:
 				# List all files in the saves directory
 				var save_dir = DirAccess.open("user://" + dir_path)
 				if save_dir == null:
-					push_error("SaveManager: Failed to open " + dir_path + " directory")
+					push_error("SaveManager: Failed to open " + dir_path + " directory - Error: " + str(FileAccess.get_open_error()))
 				else:
 					print("SaveManager: Files in " + dir_path + ":")
 					save_dir.list_dir_begin()
@@ -436,14 +545,21 @@ func save_exists(slot: int = current_save_slot) -> bool:
 					while file_name != "":
 						print("  - " + file_name)
 						file_name = save_dir.get_next()
+					save_dir.list_dir_end()
+
+					# Double-check if the save file exists after listing directory contents
+					exists = FileAccess.file_exists(save_path)
+					if exists:
+						print("SaveManager: After directory listing, save file found at: " + save_path)
 
 					# Try to create a test file to check write permissions
 					var test_path = SAVE_DIR + "test_write.tmp"
 					var test_file = FileAccess.open(test_path, FileAccess.WRITE)
 					if test_file == null:
-						push_error("SaveManager: Failed to create test file in " + SAVE_DIR)
+						push_error("SaveManager: Failed to create test file in " + SAVE_DIR + " - Error: " + str(FileAccess.get_open_error()))
 					else:
 						test_file.store_line("Test write")
+						test_file.close() # Explicitly close the file
 						print("SaveManager: Successfully created test file")
 
 						# Clean up the test file
@@ -460,6 +576,23 @@ func save_exists(slot: int = current_save_slot) -> bool:
 				else:
 					print("SaveManager: Successfully created " + dir_path + " directory")
 
+					# Try to create a test file in the newly created directory
+					var test_path = SAVE_DIR + "test_write.tmp"
+					var test_file = FileAccess.open(test_path, FileAccess.WRITE)
+					if test_file == null:
+						push_error("SaveManager: Failed to create test file in newly created directory - Error: " + str(FileAccess.get_open_error()))
+					else:
+						test_file.store_line("Test write")
+						test_file.close()
+						print("SaveManager: Successfully created test file in new directory")
+
+						# Clean up the test file
+						var dir_test = DirAccess.open("user://")
+						if dir_test != null:
+							dir_test.remove(test_path)
+
+	# One final check to make sure we have the correct result
+	exists = FileAccess.file_exists(save_path)
 	return exists
 
 # Get save info for the specified slot (for displaying in the load menu)
@@ -554,6 +687,9 @@ func set_last_bonfire(position: Vector3, bonfire_id: String, scene: String = "")
 	print("  - ID: " + last_bonfire_id)
 	print("  - Scene: " + last_bonfire_scene)
 
+	# We don't trigger a save here because the spawn_site.gd will handle that
+	# This prevents duplicate saves and ensures the save icon works correctly
+
 # Respawn the player at the last bonfire
 func respawn_at_last_bonfire() -> void:
 	# Make sure we have the latest bonfire data from the config file
@@ -569,6 +705,17 @@ func respawn_at_last_bonfire() -> void:
 	var respawn_position = last_bonfire_position
 	var respawn_scene = last_bonfire_scene
 	var respawn_bonfire_id = last_bonfire_id
+
+	# Save the current bonfire data to ensure it persists
+	print("SaveManager: Saving current bonfire data before respawn")
+	_save_config()
+
+	# Try to save the game to ensure the bonfire data is saved
+	print("SaveManager: Attempting to save game before respawn")
+	# We don't need to await the save_game result here since we're just ensuring the data is saved
+	# and we don't want to delay the respawn process
+	save_game(current_save_slot) # This will run in the background and use the current save slot
+	print("SaveManager: Save initiated before respawn")
 
 	# Create a callback to position the player after the scene is loaded
 	var position_player_callback = func():
@@ -616,6 +763,7 @@ func respawn_at_last_bonfire() -> void:
 		print("SaveManager: Looking for bonfire with ID: " + respawn_bonfire_id)
 		print("SaveManager: Found " + str(bonfires.size()) + " interactables in the scene")
 
+		# First, try to find the exact bonfire by ID
 		for bonfire in bonfires:
 			# Check if this is the bonfire we want to respawn at
 			if bonfire.has_method("get_bonfire_id"):
@@ -629,12 +777,22 @@ func respawn_at_last_bonfire() -> void:
 					# Update the player position to match the exact bonfire position
 					player.global_position = bonfire.global_position
 					print("SaveManager: Updated player position to exact bonfire position: " + str(bonfire.global_position))
+
+					# Activate the bonfire visually if possible
+					if bonfire.has_method("activate_visually"):
+						bonfire.activate_visually()
+						print("SaveManager: Activated bonfire visually")
+
 					break
 			else:
 				print("SaveManager: Interactable doesn't have get_bonfire_id method: " + bonfire.name)
 
 		if !found_matching_bonfire:
 			push_warning("SaveManager: Could not find matching bonfire in scene, using saved position instead")
+
+			# As a fallback, position the player at the saved position
+			player.global_position = respawn_position
+			print("SaveManager: Positioned player at saved position: " + str(respawn_position))
 
 	# Connect to the tree_changed signal to detect when the scene is loaded
 	get_tree().tree_changed.connect(position_player_callback, CONNECT_ONE_SHOT)

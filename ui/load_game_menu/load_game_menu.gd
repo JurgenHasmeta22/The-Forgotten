@@ -73,16 +73,40 @@ func _input(event):
 			_on_back_button_pressed()
 
 func _on_save_slot_1_pressed():
-	GameManager.load_game(1)
+	print("LoadGameMenu: Loading save slot 1")
+	# Set the current save slot
+	SaveManager.current_save_slot = 1
+	SaveManager._save_config()
+
+	# Hide the menu
 	hide()
+
+	# Directly load the prison level
+	GameManager.change_scene_with_loading("res://levels/prison/prison.tscn")
 
 func _on_save_slot_2_pressed():
-	GameManager.load_game(2)
+	print("LoadGameMenu: Loading save slot 2")
+	# Set the current save slot
+	SaveManager.current_save_slot = 2
+	SaveManager._save_config()
+
+	# Hide the menu
 	hide()
 
+	# Directly load the prison level
+	GameManager.change_scene_with_loading("res://levels/prison/prison.tscn")
+
 func _on_save_slot_3_pressed():
-	GameManager.load_game(3)
+	print("LoadGameMenu: Loading save slot 3")
+	# Set the current save slot
+	SaveManager.current_save_slot = 3
+	SaveManager._save_config()
+
+	# Hide the menu
 	hide()
+
+	# Directly load the prison level
+	GameManager.change_scene_with_loading("res://levels/prison/prison.tscn")
 
 func _on_back_button_pressed():
 	hide()

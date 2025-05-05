@@ -8,6 +8,14 @@ func _ready():
 	# Ensure the game is not paused when the start menu is shown
 	get_tree().paused = false
 
+	# Add this menu to a group so SaveManager can find it
+	add_to_group("start_menu")
+
+	# Check for save files and update buttons
+	refresh_save_buttons()
+
+# Function to refresh the save buttons (can be called from SaveManager)
+func refresh_save_buttons():
 	print("StartMenu: Checking for save files...")
 
 	# Check if there's a save file to enable/disable continue button
@@ -44,10 +52,29 @@ func _input(event):
 
 func _on_continue_button_pressed():
 	# Load the most recent save
-	print("Loading most recent save...")
-	GameManager.load_game()
+	print("StartMenu: Loading most recent save...")
 
-	# This will load the saved scene and position the player at their saved location
+	# Make sure we're using the current save slot
+	var current_slot = SaveManager.current_save_slot
+	print("StartMenu: Using save slot: " + str(current_slot))
+
+	# Check if the save exists before trying to load it
+	if SaveManager.save_exists(current_slot):
+		print("StartMenu: Valid save found in slot " + str(current_slot))
+		# Use direct scene loading to the prison level
+		GameManager.change_scene_with_loading("res://levels/prison/prison.tscn")
+	else:
+		push_error("StartMenu: No save file exists in slot " + str(current_slot))
+		# Try to find any valid save slot
+		for i in range(1, SaveManager.MAX_SAVE_SLOTS + 1):
+			if SaveManager.save_exists(i):
+				print("StartMenu: Found valid save in slot " + str(i))
+				# Use direct scene loading to the prison level
+				GameManager.change_scene_with_loading("res://levels/prison/prison.tscn")
+				return
+
+		# If we get here, no valid saves were found
+		push_error("StartMenu: No valid save files found")
 
 func _on_new_game_button_pressed():
 	# Start a new game
