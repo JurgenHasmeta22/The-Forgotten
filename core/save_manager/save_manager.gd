@@ -27,21 +27,10 @@ func _ready():
 	print("SaveManager: Initializing...")
 
 	# Create the saves directory if it doesn't exist
-	var dir = DirAccess.open("user://")
-	if dir == null:
-		push_error("SaveManager: Failed to open user:// directory")
+	if ensure_save_directory_exists():
+		print("SaveManager: Saves directory is ready")
 	else:
-		print("SaveManager: Successfully opened user:// directory")
-
-		if not dir.dir_exists(SAVE_DIR.trim_suffix("/")):
-			print("SaveManager: Creating saves directory at " + SAVE_DIR)
-			var err = dir.make_dir(SAVE_DIR.trim_suffix("/"))
-			if err != OK:
-				push_error("SaveManager: Failed to create saves directory: " + str(err))
-			else:
-				print("SaveManager: Successfully created saves directory")
-		else:
-			print("SaveManager: Saves directory already exists")
+		push_error("SaveManager: Failed to create saves directory")
 
 	# Try to load the last used save slot from a config file
 	_load_config()
@@ -244,30 +233,13 @@ func save_game(slot: int = current_save_slot) -> bool:
 
 	# Make sure the save directory exists
 	print("SaveManager: Ensuring save directory exists at " + SAVE_DIR)
-	var dir = DirAccess.open("user://")
-	if dir == null:
-		push_error("SaveManager: Failed to open user:// directory - Error: " + str(FileAccess.get_open_error()))
+	if not ensure_save_directory_exists():
+		push_error("SaveManager: Failed to ensure save directory exists")
 		is_saving = false
 		save_icon_hidden.emit()
 		return false
 
-	if not dir.dir_exists(SAVE_DIR.trim_suffix("/")):
-		print("SaveManager: Creating saves directory")
-		var err = dir.make_dir(SAVE_DIR.trim_suffix("/"))
-		if err != OK:
-			push_error("SaveManager: Failed to create saves directory: " + str(err))
-			is_saving = false
-			save_icon_hidden.emit()
-			return false
-
-	# Double check the directory exists before trying to save
-	if not dir.dir_exists(SAVE_DIR.trim_suffix("/")):
-		push_error("SaveManager: Directory still doesn't exist after creation attempt: " + SAVE_DIR)
-		is_saving = false
-		save_icon_hidden.emit()
-		return false
-	else:
-		print("SaveManager: Confirmed saves directory exists at: " + SAVE_DIR)
+	print("SaveManager: Confirmed saves directory exists at: " + SAVE_DIR)
 
 	print("SaveManager: Opening file for writing: " + save_path)
 	var save_file = FileAccess.open(save_path, FileAccess.WRITE)
@@ -336,27 +308,42 @@ func load_game(slot: int = current_save_slot) -> bool:
 	current_save_slot = slot
 	_save_config()
 
+	# Ensure the saves directory exists
+	if not ensure_save_directory_exists():
+		push_error("SaveManager: Failed to ensure save directory exists")
+		is_loading = false
+		return false
+
 	# Check if the save file exists
 	var save_path = SAVE_DIR + "slot_" + str(slot) + SAVE_FILE_EXTENSION
 	if not FileAccess.file_exists(save_path):
-		push_error("Save file does not exist: " + save_path)
+		push_error("SaveManager: Save file does not exist: " + save_path)
 		is_loading = false
 		return false
 
 	# Open the save file
 	var save_file = FileAccess.open(save_path, FileAccess.READ)
 	if save_file == null:
-		push_error("Failed to open save file: " + save_path)
+		push_error("SaveManager: Failed to open save file: " + save_path + " - Error: " + str(FileAccess.get_open_error()))
+		is_loading = false
+		return false
+
+	# Check if the file is empty
+	if save_file.get_length() == 0:
+		push_error("SaveManager: Save file is empty: " + save_path)
+		save_file.close()
 		is_loading = false
 		return false
 
 	# Read the JSON data
 	var json_string = save_file.get_line()
+	save_file.close()
+
 	var json = JSON.new()
 	var parse_result = json.parse(json_string)
 
 	if parse_result != OK:
-		push_error("Failed to parse save file JSON: " + save_path)
+		push_error("SaveManager: Failed to parse save file JSON: " + save_path + " - Error: " + str(parse_result))
 		is_loading = false
 		return false
 
@@ -530,86 +517,51 @@ func load_game(slot: int = current_save_slot) -> bool:
 
 # Check if a save exists in the specified slot
 func save_exists(slot: int = current_save_slot) -> bool:
+	# First, ensure the saves directory exists
+	ensure_save_directory_exists()
+
 	var save_path = SAVE_DIR + "slot_" + str(slot) + SAVE_FILE_EXTENSION
 	var exists = FileAccess.file_exists(save_path)
 	print("SaveManager: Checking if save exists at " + save_path + ": " + str(exists))
 
-	# If it doesn't exist, let's check if the directory exists
-	if !exists:
-		var dir = DirAccess.open("user://")
-		if dir == null:
-			push_error("SaveManager: Failed to open user:// directory - Error: " + str(FileAccess.get_open_error()))
-		else:
-			print("SaveManager: user:// directory exists")
-
-			# Check if the saves directory exists
-			var dir_path = SAVE_DIR.trim_suffix("/")
-			if dir.dir_exists(dir_path):
-				print("SaveManager: " + dir_path + " directory exists")
-
-				# List all files in the saves directory
-				var save_dir = DirAccess.open("user://" + dir_path)
-				if save_dir == null:
-					push_error("SaveManager: Failed to open " + dir_path + " directory - Error: " + str(FileAccess.get_open_error()))
-				else:
-					print("SaveManager: Files in " + dir_path + ":")
-					save_dir.list_dir_begin()
-					var file_name = save_dir.get_next()
-					while file_name != "":
-						print("  - " + file_name)
-						file_name = save_dir.get_next()
-					save_dir.list_dir_end()
-
-					# Double-check if the save file exists after listing directory contents
-					exists = FileAccess.file_exists(save_path)
-					if exists:
-						print("SaveManager: After directory listing, save file found at: " + save_path)
-
-					# Try to create a test file to check write permissions
-					var test_path = SAVE_DIR + "test_write.tmp"
-					var test_file = FileAccess.open(test_path, FileAccess.WRITE)
-					if test_file == null:
-						push_error("SaveManager: Failed to create test file in " + SAVE_DIR + " - Error: " + str(FileAccess.get_open_error()))
-					else:
-						test_file.store_line("Test write")
-						test_file.close() # Explicitly close the file
-						print("SaveManager: Successfully created test file")
-
-						# Clean up the test file
-						var dir_test = DirAccess.open("user://")
-						if dir_test != null:
-							dir_test.remove(test_path)
-			else:
-				print("SaveManager: " + dir_path + " directory does not exist")
-
-				# Try to create the directory
-				var err = dir.make_dir(dir_path)
-				if err != OK:
-					push_error("SaveManager: Failed to create " + dir_path + " directory: " + str(err))
-				else:
-					print("SaveManager: Successfully created " + dir_path + " directory")
-
-					# Try to create a test file in the newly created directory
-					var test_path = SAVE_DIR + "test_write.tmp"
-					var test_file = FileAccess.open(test_path, FileAccess.WRITE)
-					if test_file == null:
-						push_error("SaveManager: Failed to create test file in newly created directory - Error: " + str(FileAccess.get_open_error()))
-					else:
-						test_file.store_line("Test write")
-						test_file.close()
-						print("SaveManager: Successfully created test file in new directory")
-
-						# Clean up the test file
-						var dir_test = DirAccess.open("user://")
-						if dir_test != null:
-							dir_test.remove(test_path)
-
-	# One final check to make sure we have the correct result
-	exists = FileAccess.file_exists(save_path)
 	return exists
+
+# Helper function to ensure the saves directory exists
+func ensure_save_directory_exists() -> bool:
+	print("SaveManager: Ensuring save directory exists")
+
+	# First check if the user:// directory is accessible
+	var dir = DirAccess.open("user://")
+	if dir == null:
+		push_error("SaveManager: Failed to open user:// directory - Error: " + str(FileAccess.get_open_error()))
+		return false
+
+	# Check if the saves directory exists
+	var dir_path = SAVE_DIR.trim_suffix("/")
+	if dir.dir_exists(dir_path):
+		print("SaveManager: " + dir_path + " directory already exists")
+		return true
+
+	# Create the directory if it doesn't exist
+	print("SaveManager: Creating " + dir_path + " directory")
+	var err = dir.make_dir(dir_path)
+	if err != OK:
+		push_error("SaveManager: Failed to create " + dir_path + " directory: " + str(err))
+		return false
+
+	# Verify the directory was created
+	if dir.dir_exists(dir_path):
+		print("SaveManager: Successfully created " + dir_path + " directory")
+		return true
+	else:
+		push_error("SaveManager: Directory creation failed for " + dir_path)
+		return false
 
 # Get save info for the specified slot (for displaying in the load menu)
 func get_save_info(slot: int) -> Dictionary:
+	# First, ensure the saves directory exists
+	ensure_save_directory_exists()
+
 	var save_path = SAVE_DIR + "slot_" + str(slot) + SAVE_FILE_EXTENSION
 	print("SaveManager: Getting save info for slot " + str(slot) + " at path: " + save_path)
 
@@ -619,16 +571,34 @@ func get_save_info(slot: int) -> Dictionary:
 
 	var save_file = FileAccess.open(save_path, FileAccess.READ)
 	if save_file == null:
-		push_error("SaveManager: Failed to open save file: " + save_path)
+		push_error("SaveManager: Failed to open save file: " + save_path + " - Error: " + str(FileAccess.get_open_error()))
 		return {}
 
-	var json_string = save_file.get_line()
+	# Check if the file is empty
+	if save_file.get_length() == 0:
+		push_error("SaveManager: Save file is empty: " + save_path)
+		save_file.close()
+		return {}
+
+	# Try to read the JSON data
+	var json_string = ""
+	# GDScript doesn't have try/except, so we'll just read the line directly
+	json_string = save_file.get_line()
+	save_file.close()
+
+	# Parse the JSON data
 	var json = JSON.new()
 	var parse_result = json.parse(json_string)
 
 	if parse_result != OK:
-		push_error("SaveManager: Failed to parse save file JSON: " + save_path)
-		return {}
+		push_error("SaveManager: Failed to parse save file JSON: " + save_path + " - Error: " + str(parse_result))
+		# The save file might be corrupted, return default values
+		return {
+			"timestamp": Time.get_unix_time_from_system(),
+			"scene": "res://levels/prison/prison.tscn",
+			"player_level": 1,
+			"playtime": 0
+		}
 
 	var game_state = json.data
 	print("SaveManager: Successfully parsed save file JSON")
@@ -662,8 +632,24 @@ func get_save_info(slot: int) -> Dictionary:
 # Delete a save file
 func delete_save(slot: int) -> bool:
 	var save_path = SAVE_DIR + "slot_" + str(slot) + SAVE_FILE_EXTENSION
+	var found_file = false
 
+	# If not found with the configured extension, check for file with no extension
 	if not FileAccess.file_exists(save_path):
+		var alt_path = SAVE_DIR + "slot_" + str(slot)
+		if FileAccess.file_exists(alt_path):
+			save_path = alt_path
+			found_file = true
+		# If still not found, check for file with .json extension (for backward compatibility)
+		elif SAVE_FILE_EXTENSION != ".json":
+			alt_path = SAVE_DIR + "slot_" + str(slot) + ".json"
+			if FileAccess.file_exists(alt_path):
+				save_path = alt_path
+				found_file = true
+	else:
+		found_file = true
+
+	if not found_file:
 		return false
 
 	var dir = DirAccess.open(SAVE_DIR)

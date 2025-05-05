@@ -18,15 +18,23 @@ func _ready():
 func update_save_slots():
 	print("LoadGameMenu: Updating save slots...")
 
+	# Make sure the save directory exists
+	SaveManager.ensure_save_directory_exists()
+
 	# Update save slot 1
 	var slot1_exists = SaveManager.save_exists(1)
 	print("LoadGameMenu: Save slot 1 exists: " + str(slot1_exists))
 	if slot1_exists:
 		var save_info = SaveManager.get_save_info(1)
-		var date_time = Time.get_datetime_string_from_unix_time(save_info.get("timestamp", 0))
-		save_slot_1.text = "Save Slot 1 - " + date_time
-		save_slot_1.disabled = false
-		print("LoadGameMenu: Save slot 1 has timestamp: " + date_time)
+		if save_info.is_empty():
+			save_slot_1.text = "Save Slot 1 - Corrupted"
+			save_slot_1.disabled = true
+			print("LoadGameMenu: Save slot 1 is corrupted")
+		else:
+			var date_time = Time.get_datetime_string_from_unix_time(save_info.get("timestamp", 0))
+			save_slot_1.text = "Save Slot 1 - " + date_time
+			save_slot_1.disabled = false
+			print("LoadGameMenu: Save slot 1 has timestamp: " + date_time)
 	else:
 		save_slot_1.text = "Save Slot 1 - Empty"
 		save_slot_1.disabled = true
@@ -36,10 +44,15 @@ func update_save_slots():
 	print("LoadGameMenu: Save slot 2 exists: " + str(slot2_exists))
 	if slot2_exists:
 		var save_info = SaveManager.get_save_info(2)
-		var date_time = Time.get_datetime_string_from_unix_time(save_info.get("timestamp", 0))
-		save_slot_2.text = "Save Slot 2 - " + date_time
-		save_slot_2.disabled = false
-		print("LoadGameMenu: Save slot 2 has timestamp: " + date_time)
+		if save_info.is_empty():
+			save_slot_2.text = "Save Slot 2 - Corrupted"
+			save_slot_2.disabled = true
+			print("LoadGameMenu: Save slot 2 is corrupted")
+		else:
+			var date_time = Time.get_datetime_string_from_unix_time(save_info.get("timestamp", 0))
+			save_slot_2.text = "Save Slot 2 - " + date_time
+			save_slot_2.disabled = false
+			print("LoadGameMenu: Save slot 2 has timestamp: " + date_time)
 	else:
 		save_slot_2.text = "Save Slot 2 - Empty"
 		save_slot_2.disabled = true
@@ -49,10 +62,15 @@ func update_save_slots():
 	print("LoadGameMenu: Save slot 3 exists: " + str(slot3_exists))
 	if slot3_exists:
 		var save_info = SaveManager.get_save_info(3)
-		var date_time = Time.get_datetime_string_from_unix_time(save_info.get("timestamp", 0))
-		save_slot_3.text = "Save Slot 3 - " + date_time
-		save_slot_3.disabled = false
-		print("LoadGameMenu: Save slot 3 has timestamp: " + date_time)
+		if save_info.is_empty():
+			save_slot_3.text = "Save Slot 3 - Corrupted"
+			save_slot_3.disabled = true
+			print("LoadGameMenu: Save slot 3 is corrupted")
+		else:
+			var date_time = Time.get_datetime_string_from_unix_time(save_info.get("timestamp", 0))
+			save_slot_3.text = "Save Slot 3 - " + date_time
+			save_slot_3.disabled = false
+			print("LoadGameMenu: Save slot 3 has timestamp: " + date_time)
 	else:
 		save_slot_3.text = "Save Slot 3 - Empty"
 		save_slot_3.disabled = true
@@ -77,24 +95,36 @@ func _on_save_slot_1_pressed():
 	# Hide the menu
 	hide()
 
-	# Use GameManager to load the save
-	GameManager.load_game(1)
+	# Use SaveManager directly to load the save
+	var load_success = SaveManager.load_game(1)
+	if !load_success:
+		push_error("LoadGameMenu: Failed to load save from slot 1")
+		# Return to the start menu if loading fails
+		get_tree().change_scene_to_file("res://ui/start_menu/start_menu.tscn")
 
 func _on_save_slot_2_pressed():
 	print("LoadGameMenu: Loading save slot 2")
 	# Hide the menu
 	hide()
 
-	# Use GameManager to load the save
-	GameManager.load_game(2)
+	# Use SaveManager directly to load the save
+	var load_success = SaveManager.load_game(2)
+	if !load_success:
+		push_error("LoadGameMenu: Failed to load save from slot 2")
+		# Return to the start menu if loading fails
+		get_tree().change_scene_to_file("res://ui/start_menu/start_menu.tscn")
 
 func _on_save_slot_3_pressed():
 	print("LoadGameMenu: Loading save slot 3")
 	# Hide the menu
 	hide()
 
-	# Use GameManager to load the save
-	GameManager.load_game(3)
+	# Use SaveManager directly to load the save
+	var load_success = SaveManager.load_game(3)
+	if !load_success:
+		push_error("LoadGameMenu: Failed to load save from slot 3")
+		# Return to the start menu if loading fails
+		get_tree().change_scene_to_file("res://ui/start_menu/start_menu.tscn")
 
 func _on_back_button_pressed():
 	hide()
