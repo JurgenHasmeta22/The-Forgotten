@@ -62,8 +62,15 @@ func _check_loading_progress():
 		# Get the loaded resource
 		var resource = ResourceLoader.load_threaded_get(target_scene)
 
-		# Change to the new scene
-		get_tree().change_scene_to_packed(resource)
+		# Check if the resource is valid before changing scenes
+		if resource != null:
+			# Change to the new scene
+			get_tree().change_scene_to_packed(resource)
+		else:
+			# Handle the case where the resource is null
+			push_error("Failed to load scene resource: " + target_scene)
+			# Fallback to start menu
+			get_tree().change_scene_to_file("res://ui/start_menu/start_menu.tscn")
 
 		# Remove ourselves
 		queue_free()

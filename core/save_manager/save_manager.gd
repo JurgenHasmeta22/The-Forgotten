@@ -8,6 +8,8 @@ signal save_started
 signal save_completed
 signal load_started
 signal load_completed
+signal save_icon_shown
+signal save_icon_hidden
 
 const SAVE_DIR = "user://saves/"
 const SAVE_FILE_EXTENSION = ".json"
@@ -27,7 +29,26 @@ func _ready():
 	if not dir.dir_exists(SAVE_DIR):
 		dir.make_dir(SAVE_DIR)
 
+	# Try to load the last used save slot from a config file
+	_load_config()
+
 	print("SaveManager initialized")
+
+# Load configuration settings
+func _load_config() -> void:
+	var config_path = "user://save_config.cfg"
+	if FileAccess.file_exists(config_path):
+		var config = ConfigFile.new()
+		var err = config.load(config_path)
+		if err == OK:
+			current_save_slot = config.get_value("save", "last_slot", 1)
+			print("Loaded last save slot: " + str(current_save_slot))
+
+# Save configuration settings
+func _save_config() -> void:
+	var config = ConfigFile.new()
+	config.set_value("save", "last_slot", current_save_slot)
+	config.save("user://save_config.cfg")
 
 # Save the current game state to the specified slot
 func save_game(slot: int = current_save_slot) -> bool:
@@ -36,9 +57,11 @@ func save_game(slot: int = current_save_slot) -> bool:
 
 	is_saving = true
 	save_started.emit()
+	save_icon_shown.emit()
 
-	# Set the current save slot
+	# Set the current save slot and save it to config
 	current_save_slot = slot
+	_save_config()
 
 	# Make sure we have valid bonfire data
 	if last_bonfire_position == Vector3.ZERO or last_bonfire_id.is_empty() or last_bonfire_scene.is_empty():
@@ -98,6 +121,7 @@ func save_game(slot: int = current_save_slot) -> bool:
 	if save_file == null:
 		push_error("Failed to open save file: " + save_path)
 		is_saving = false
+		save_icon_hidden.emit()
 		return false
 
 	# Convert the save data to JSON and save it
@@ -110,6 +134,7 @@ func save_game(slot: int = current_save_slot) -> bool:
 
 	is_saving = false
 	save_completed.emit()
+	save_icon_hidden.emit()
 	return true
 
 # Load a game from the specified slot
@@ -120,8 +145,9 @@ func load_game(slot: int = current_save_slot) -> bool:
 	is_loading = true
 	load_started.emit()
 
-	# Set the current save slot
+	# Set the current save slot and save it to config
 	current_save_slot = slot
+	_save_config()
 
 	# Check if the save file exists
 	var save_path = SAVE_DIR + "slot_" + str(slot) + SAVE_FILE_EXTENSION
@@ -183,17 +209,58 @@ func load_game(slot: int = current_save_slot) -> bool:
 		# We need to remove any existing persistent nodes before adding the loaded ones
 		var existing_persist_nodes = get_tree().get_nodes_in_group("Persist")
 		for node in existing_persist_nodes:
+			# Skip the player node - we'll handle it separately
+			if node.is_in_group("player"):
+				continue
 			node.queue_free()
 
 		# Wait for nodes to be removed
 		await get_tree().process_frame
 
+		# Find the player before instantiating other nodes
+		var player = get_tree().get_first_node_in_group("player")
+		if player:
+			# Position the player at the last bonfire
+			player.global_position = last_bonfire_position
+			print("Positioned player at last bonfire: " + str(last_bonfire_position))
+
+			# Reset player health and stamina
+			if player.health_system:
+				player.health_system.current_health = player.health_system.total_health
+				player.health_system.health_updated.emit(player.health_system.current_health)
+
+			if player.stamina_system:
+				player.stamina_system.current_stamina = player.stamina_system.total_stamina
+				player.stamina_system.stamina_updated.emit(player.stamina_system.current_stamina)
+		else:
+			push_error("Player not found after loading scene")
+
 		# Now instantiate all saved nodes
 		if game_state.has("nodes"):
 			for node_data in game_state["nodes"]:
-				# Instantiate the node
-				var new_object = load(node_data["filename"]).instantiate()
-				get_node(node_data["parent"]).add_child(new_object)
+				# Skip player nodes - we already have a player in the scene
+				if node_data.has("is_player") and node_data["is_player"]:
+					continue
+
+				# Try to instantiate the node
+				var scene_resource = load(node_data["filename"])
+				if scene_resource == null:
+					push_error("Failed to load scene: " + node_data["filename"])
+					continue
+
+				var new_object = scene_resource.instantiate()
+				if new_object == null:
+					push_error("Failed to instantiate scene: " + node_data["filename"])
+					continue
+
+				# Try to get the parent node
+				var parent_node = get_node_or_null(node_data["parent"])
+				if parent_node == null:
+					push_error("Failed to find parent node: " + node_data["parent"])
+					new_object.queue_free()
+					continue
+
+				parent_node.add_child(new_object)
 
 				# Set position for 2D or 3D nodes
 				if new_object is Node2D:
@@ -211,16 +278,6 @@ func load_game(slot: int = current_save_slot) -> bool:
 
 				print("Restored node: " + new_object.name)
 
-		# Position the player at the last bonfire if needed
-		var player = get_tree().get_first_node_in_group("player")
-		if player:
-			# If player was not in the saved nodes, position them at the last bonfire
-			if player.global_position == Vector3.ZERO:
-				player.global_position = last_bonfire_position
-				print("Positioned player at last bonfire: " + str(last_bonfire_position))
-		else:
-			push_error("Player not found after loading scene")
-
 		is_loading = false
 		load_completed.emit()
 
@@ -229,6 +286,13 @@ func load_game(slot: int = current_save_slot) -> bool:
 
 	# Load the scene
 	var target_scene = game_state["scene"]
+
+	# Verify the scene path exists
+	if !ResourceLoader.exists(target_scene):
+		push_error("Scene file does not exist: " + target_scene)
+		is_loading = false
+		return false
+
 	if target_scene != get_tree().current_scene.scene_file_path:
 		# Change to the saved scene with loading screen
 		print("Loading scene: " + target_scene)
@@ -320,8 +384,8 @@ func set_last_bonfire(position: Vector3, bonfire_id: String, scene: String = "")
 
 # Respawn the player at the last bonfire
 func respawn_at_last_bonfire() -> void:
-	if last_bonfire_scene.is_empty():
-		push_error("No last bonfire scene set")
+	if last_bonfire_scene.is_empty() or last_bonfire_position == Vector3.ZERO:
+		push_error("No valid bonfire data for respawn")
 		return
 
 	print("Respawning at bonfire: ID=" + last_bonfire_id + ", Position=" + str(last_bonfire_position))
@@ -369,11 +433,28 @@ func respawn_at_last_bonfire() -> void:
 		if player == null:
 			push_error("Failed to find player after respawn")
 
+		# Find all bonfires in the scene
+		var bonfires = get_tree().get_nodes_in_group("interactable")
+		for bonfire in bonfires:
+			# Check if this is the bonfire we want to respawn at
+			if bonfire.has_method("get_bonfire_id") and bonfire.get_bonfire_id() == last_bonfire_id:
+				print("Found matching bonfire: " + bonfire.get_bonfire_id())
+				# The bonfire is already in the scene, no need to do anything else
+				break
+
 	# Connect to the tree_changed signal to detect when the scene is loaded
 	get_tree().tree_changed.connect(position_player_callback, CONNECT_ONE_SHOT)
 
 	# Always reload the scene to reset enemies and world state
 	# This is what makes it work like Dark Souls - the world resets but you start at your last bonfire
+
+	# Verify the scene path exists
+	if !ResourceLoader.exists(respawn_scene):
+		push_error("Scene file does not exist: " + respawn_scene)
+		# Fallback to reloading current scene
+		get_tree().reload_current_scene()
+		return
+
 	if respawn_scene != get_tree().current_scene.scene_file_path:
 		# If we're in a different scene, load that scene
 		print("Loading different scene: " + respawn_scene)

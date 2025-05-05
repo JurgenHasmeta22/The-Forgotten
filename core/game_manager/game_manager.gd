@@ -8,6 +8,7 @@ var loading_screen_scene = preload("res://ui/loading_screen/loading_screen.tscn"
 # Signals
 signal game_paused
 signal game_resumed
+signal game_loaded
 
 func _ready():
 	# Get the current scene
@@ -51,3 +52,28 @@ func change_scene(scene_path: String):
 
 	# Use Godot's built-in scene changer
 	get_tree().change_scene_to_file(scene_path)
+
+# Load a saved game
+func load_game(slot: int = 1):
+	# Unpause the game if it was paused
+	if is_game_paused:
+		toggle_pause()
+
+	# Check if the save exists
+	if not SaveManager.save_exists(slot):
+		push_error("No save file exists in slot " + str(slot))
+		# Stay on current scene if load fails
+		return
+
+	print("Loading game from slot " + str(slot))
+
+	# Load the game using SaveManager
+	var success = SaveManager.load_game(slot)
+
+	if success:
+		game_loaded.emit()
+	else:
+		push_error("Failed to load game from slot " + str(slot))
+		# If loading fails, stay on current scene or go to start menu
+		if get_tree().current_scene.name != "StartMenu":
+			change_scene("res://ui/start_menu/start_menu.tscn")

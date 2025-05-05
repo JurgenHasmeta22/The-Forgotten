@@ -7,8 +7,8 @@ func _ready():
 	modulate.a = 0
 
 	# Connect to SaveManager signals
-	SaveManager.save_started.connect(_on_save_started)
-	SaveManager.save_completed.connect(_on_save_completed)
+	SaveManager.save_icon_shown.connect(_on_save_started)
+	SaveManager.save_icon_hidden.connect(_on_save_completed)
 
 func _on_save_started():
 	# Show the saving animation

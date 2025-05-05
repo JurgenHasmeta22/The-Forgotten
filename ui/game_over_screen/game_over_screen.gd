@@ -84,4 +84,4 @@ func _on_quit_button_pressed():
 	get_tree().paused = false
 
 	# Return to the main menu
-	GameManager.change_scene("res://ui/start_menu.tscn")
+	GameManager.change_scene("res://ui/start_menu/start_menu.tscn")

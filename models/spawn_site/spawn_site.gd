@@ -25,6 +25,10 @@ func _ready():
 		# Use the position as part of the ID to make it unique
 		bonfire_id = "bonfire_" + str(get_instance_id()) + "_" + str(global_position.x).substr(0, 4) + "_" + str(global_position.z).substr(0, 4)
 
+# Return the bonfire ID for use by the SaveManager
+func get_bonfire_id() -> String:
+	return bonfire_id
+
 func activate(player: CharacterBody3D):
 	# Set this as the last bonfire if it's a bonfire
 	if is_bonfire:

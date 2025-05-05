@@ -62,15 +62,15 @@ func _input(event):
 			_on_back_button_pressed()
 
 func _on_save_slot_1_pressed():
-	SaveManager.load_game(1)
+	GameManager.load_game(1)
 	hide()
 
 func _on_save_slot_2_pressed():
-	SaveManager.load_game(2)
+	GameManager.load_game(2)
 	hide()
 
 func _on_save_slot_3_pressed():
-	SaveManager.load_game(3)
+	GameManager.load_game(3)
 	hide()
 
 func _on_back_button_pressed():
