@@ -57,7 +57,6 @@ func activate(player: CharacterBody3D):
 		# Wait for animation to finish
 		await anim_player.animation_finished
 
-		# Auto-save the game AFTER animation finishes
 		# Explicitly emit the save icon shown signal
 		SaveManager.save_icon_shown.emit()
 
@@ -121,6 +120,9 @@ func position_player_at_bonfire():
 func respawn():
 	# Update the SaveManager with this bonfire's data using the proper function
 	SaveManager.set_last_bonfire(bonfire_id, get_tree().current_scene.scene_file_path)
+
+	# Save the game to ensure bonfire data is saved
+	SaveManager.save_at_bonfire()
 
 	if reset_level:
 		# Reload the current scene to reset enemies

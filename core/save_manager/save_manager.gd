@@ -79,18 +79,18 @@ func ensure_save_directory_exists():
 		print("SaveManager: Created saves directory")
 # endregion
 
-# region "Read and write save files"
-func save_at_bonfire():
+# region "Save and load functions"
+func save_game(slot: int = 0) -> bool:
 	var player = get_tree().get_first_node_in_group("player")
 
 	if player:
-		if last_bonfire_id.is_empty() or last_bonfire_scene.is_empty():
-			push_error("SaveManager: Cannot save at bonfire - bonfire data is empty!")
-			return false
+		# Update bonfire data if available
+		if !last_bonfire_id.is_empty():
+			data["last_bonfire_id"] = last_bonfire_id
+		if !last_bonfire_scene.is_empty():
+			data["last_bonfire_scene"] = last_bonfire_scene
 
-		data["last_bonfire_id"] = last_bonfire_id
-		data["last_bonfire_scene"] = last_bonfire_scene
-
+		# Save player data
 		if "player" not in data:
 			data["player"] = {}
 
@@ -98,18 +98,31 @@ func save_at_bonfire():
 			var player_data = player.save()
 			data["player"] = player_data
 
-		data["game_state"] = {
-			"enemies_defeated": [], # Add logic to track defeated enemies
-			"items_collected": [], # Add logic to track collected items
-			"doors_opened": [] # Add logic to track opened doors
-		}
+		# Save game state
+		if "game_state" not in data:
+			data["game_state"] = {
+				"enemies_defeated": [], # Add logic to track defeated enemies
+				"items_collected": [], # Add logic to track collected items
+				"doors_opened": [] # Add logic to track opened doors
+			}
 
-		write_save(data)
-		print("Game saved at bonfire: " + last_bonfire_id)
+		# Write the save file
+		write_save(data, slot)
+		print("Game saved to slot " + str(slot if slot > 0 else current_save_slot))
 
 		return true
 
 	return false
+
+func save_at_bonfire():
+	# Check if bonfire data is valid
+	if last_bonfire_id.is_empty() or last_bonfire_scene.is_empty():
+		push_error("SaveManager: Cannot save at bonfire - bonfire data is empty!")
+		return false
+
+	# Use the save_game function to save the game
+	print("Game saved at bonfire: " + last_bonfire_id)
+	return save_game()
 
 func write_save(content, slot: int = 0):
 	emit_signal("save_started")
@@ -173,14 +186,6 @@ func create_new_save_file(slot: int = 0):
 	write_save(content, save_slot)
 
 	return content
-# endregion
-
-# region "Load game, new game, ready"
-func _ready():
-	ensure_save_directory_exists()
-
-	# We don't need to load any save data on startup
-	# The start menu will handle loading the appropriate save
 
 func load_game(slot: int = 0) -> bool:
 	var save_slot = slot if slot > 0 else current_save_slot
@@ -246,10 +251,22 @@ func new_game(slot: int = 0) -> bool:
 	# Set as current slot
 	current_save_slot = slot
 
+	# Reset bonfire data
+	last_bonfire_id = ""
+	last_bonfire_scene = ""
+
+	# Make sure the data is saved
+	save_game(slot)
+
 	# Start a new game in the default scene
 	GameManager.change_scene_with_loading("res://levels/prison/prison.tscn")
 
 	return true
+# endregion
+
+# region "Ready function"
+func _ready():
+	ensure_save_directory_exists()
 # endregion
 
 # region "Bonfire functions"
