@@ -47,7 +47,7 @@ func _on_continue_button_pressed():
 
 func _on_new_game_button_pressed():
 	# Start a new game
-	GameManager.change_scene_with_loading("res://levels/prison/world_castle.tscn")
+	GameManager.change_scene_with_loading("res://levels/prison/prison.tscn")
 
 func _on_load_game_button_pressed():
 	# Show the load game menu

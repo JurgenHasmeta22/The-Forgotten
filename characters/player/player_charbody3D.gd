@@ -558,10 +558,10 @@ func _stop_all_player_sounds():
 		# This will be called when the timer expires
 		# Show the game over screen - try to load the new version first, fall back to original if needed
 		var game_over_screen
-		if ResourceLoader.exists("res://ui/game_over_screen_new.tscn"):
-			game_over_screen = load("res://ui/game_over_screen_new.tscn").instantiate()
+		if ResourceLoader.exists("res://ui/game_over_screen/game_over_screen_new.tscn"):
+			game_over_screen = load("res://ui/game_over_screen/game_over_screen_new.tscn").instantiate()
 		else:
-			game_over_screen = load("res://ui/game_over_screen.tscn").instantiate()
+			game_over_screen = load("res://ui/game_over_screen/game_over_screen.tscn").instantiate()
 		get_tree().root.add_child(game_over_screen)
 	)
 	add_child(game_over_timer)
