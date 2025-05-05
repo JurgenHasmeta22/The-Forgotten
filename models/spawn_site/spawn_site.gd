@@ -96,12 +96,10 @@ func _deferred_position_player():
 
 	# Wait a moment for the scene to fully load
 	await get_tree().process_frame
-	await get_tree().process_frame
 
 	var player = get_tree().get_first_node_in_group("player")
 
 	if player == null:
-		print("SpawnSite: No player found to position at bonfire")
 		return
 
 	# Position the player at this bonfire

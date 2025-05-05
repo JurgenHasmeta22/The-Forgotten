@@ -2,10 +2,6 @@
   "version": 1,
   "timestamp": 0,
   "player": {
-    "health": 100,
-    "max_health": 100,
-    "stamina": 100,
-    "max_stamina": 100,
     "inventory": {}
   },
   "last_bonfire_id": "",

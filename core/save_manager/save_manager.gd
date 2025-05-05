@@ -9,6 +9,7 @@ signal save_icon_shown
 signal save_icon_hidden
 signal enemy_defeated(enemy_id)
 signal door_opened(door_id)
+signal last_bonfire_changed(bonfire_id, scene)
 
 const SAVE_DIR = "user://saves/"
 const MAX_SAVE_SLOTS = 3
@@ -46,7 +47,6 @@ func get_save_info(slot: int = 0) -> Dictionary:
 	if content == null:
 		return {}
 
-	# Return only basic info to avoid loading the entire save
 	var info = {
 		"timestamp": content.get("timestamp", 0),
 		"version": content.get("version", 0),
@@ -60,18 +60,15 @@ func get_latest_save_slot() -> int:
 	var latest_slot = 0
 	var latest_timestamp = 0
 
-	# Check all save slots
 	for slot in range(1, MAX_SAVE_SLOTS + 1):
 		if save_exists(slot):
 			var info = get_save_info(slot)
 			var timestamp = info.get("timestamp", 0)
 
-			# If this save is newer than our current latest
 			if timestamp > latest_timestamp:
 				latest_timestamp = timestamp
 				latest_slot = slot
 
-	# If no saves found, return 0
 	return latest_slot
 
 func ensure_save_directory_exists():
@@ -163,10 +160,6 @@ func create_new_save_file(slot: int = 0):
 			"version": CURRENT_SAVE_VERSION,
 			"timestamp": Time.get_unix_time_from_system(),
 			"player": {
-				"health": 100,
-				"max_health": 100,
-				"stamina": 100,
-				"max_stamina": 100,
 				"inventory": {}
 			},
 			"last_bonfire_id": "",
@@ -178,13 +171,8 @@ func create_new_save_file(slot: int = 0):
 			}
 		}
 
-	# Update timestamp to current time
 	content["timestamp"] = Time.get_unix_time_from_system()
-
-	# Set as current data
 	data = content
-
-	# Save to file
 	write_save(content, save_slot)
 
 	return content
@@ -201,7 +189,6 @@ func load_game(slot: int = 0) -> bool:
 		emit_signal("load_completed")
 		return false
 
-	# Load the save data
 	var save_path = get_save_path(save_slot)
 	var file = FileAccess.open(save_path, FileAccess.READ)
 	var content = JSON.parse_string(file.get_as_text())
@@ -213,16 +200,10 @@ func load_game(slot: int = 0) -> bool:
 		emit_signal("load_completed")
 		return false
 
-	# Update current data
 	data = content
-
-	# Update bonfire data
 	last_bonfire_id = content.get("last_bonfire_id", "")
 	last_bonfire_scene = content.get("last_bonfire_scene", "")
-
-	# Set the current save slot
 	current_save_slot = save_slot
-
 	is_loading = false
 	emit_signal("load_completed")
 
@@ -279,6 +260,8 @@ func set_last_bonfire(bonfire_id: String, scene: String = "") -> void:
 		last_bonfire_scene = get_tree().current_scene.scene_file_path
 	else:
 		last_bonfire_scene = scene
+
+	last_bonfire_changed.emit(last_bonfire_id, last_bonfire_scene)
 # endregion
 
 # region "Game state tracking functions"
@@ -295,9 +278,8 @@ func add_defeated_enemy(enemy_id: String) -> void:
 
 	if not enemy_id in data["game_state"]["enemies_defeated"]:
 		data["game_state"]["enemies_defeated"].append(enemy_id)
-		print("SaveManager: Added enemy " + enemy_id + " to defeated list")
 		enemy_defeated.emit(enemy_id)
-		save_game()
+		_silent_save()
 
 func add_opened_door(door_id: String) -> void:
 	if "game_state" not in data:
@@ -312,9 +294,8 @@ func add_opened_door(door_id: String) -> void:
 
 	if not door_id in data["game_state"]["doors_opened"]:
 		data["game_state"]["doors_opened"].append(door_id)
-		print("SaveManager: Added door " + door_id + " to opened list")
 		door_opened.emit(door_id)
-		save_game()
+		_silent_save()
 
 func is_enemy_defeated(enemy_id: String) -> bool:
 	if "game_state" not in data:
@@ -333,4 +314,57 @@ func is_door_opened(door_id: String) -> bool:
 		return false
 
 	return door_id in data["game_state"]["doors_opened"]
+
+# Silent save function that doesn't show the save icon
+func _silent_save(slot: int = 0) -> bool:
+	var player = get_tree().get_first_node_in_group("player")
+
+	if player:
+		# Update bonfire data if available
+		if !last_bonfire_id.is_empty():
+			data["last_bonfire_id"] = last_bonfire_id
+		if !last_bonfire_scene.is_empty():
+			data["last_bonfire_scene"] = last_bonfire_scene
+
+		# Save player data
+		if "player" not in data:
+			data["player"] = {}
+
+		if player.has_method("save"):
+			var player_data = player.save()
+			data["player"] = player_data
+
+		# Save game state
+		if "game_state" not in data:
+			data["game_state"] = {
+				"enemies_defeated": [],
+				"items_collected": [],
+				"doors_opened": []
+			}
+
+		# Write the save file silently (without showing the save icon)
+		_write_save_silent(data, slot)
+		return true
+
+	return false
+
+# Write save without showing the save icon
+func _write_save_silent(content, slot: int = 0):
+	emit_signal("save_started")
+	is_saving = true
+
+	content["timestamp"] = Time.get_unix_time_from_system()
+	content["version"] = CURRENT_SAVE_VERSION
+
+	# Use the specified slot or current slot
+	var save_slot = slot if slot > 0 else current_save_slot
+	var save_path = get_save_path(save_slot)
+
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
+	file.store_string(JSON.stringify(content))
+	file.close()
+	file = null
+
+	is_saving = false
+	emit_signal("save_completed")
 # endregion
