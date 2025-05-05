@@ -8,37 +8,37 @@ extends Control
 func _ready():
 	# Hide the menu initially
 	hide()
-	
+
 	# Update save slot buttons with save info
 	update_save_slots()
-	
+
 	# Set focus to the first available save slot or back button
 	set_initial_focus()
 
 func update_save_slots():
 	# Update save slot 1
-	if SaveSystem.save_exists(1):
-		var save_info = SaveSystem.get_save_info(1)
+	if SaveManager.save_exists(1):
+		var save_info = SaveManager.get_save_info(1)
 		var date_time = Time.get_datetime_string_from_unix_time(save_info.get("timestamp", 0))
 		save_slot_1.text = "Save Slot 1 - " + date_time
 		save_slot_1.disabled = false
 	else:
 		save_slot_1.text = "Save Slot 1 - Empty"
 		save_slot_1.disabled = true
-	
+
 	# Update save slot 2
-	if SaveSystem.save_exists(2):
-		var save_info = SaveSystem.get_save_info(2)
+	if SaveManager.save_exists(2):
+		var save_info = SaveManager.get_save_info(2)
 		var date_time = Time.get_datetime_string_from_unix_time(save_info.get("timestamp", 0))
 		save_slot_2.text = "Save Slot 2 - " + date_time
 		save_slot_2.disabled = false
 	else:
 		save_slot_2.text = "Save Slot 2 - Empty"
 		save_slot_2.disabled = true
-	
+
 	# Update save slot 3
-	if SaveSystem.save_exists(3):
-		var save_info = SaveSystem.get_save_info(3)
+	if SaveManager.save_exists(3):
+		var save_info = SaveManager.get_save_info(3)
 		var date_time = Time.get_datetime_string_from_unix_time(save_info.get("timestamp", 0))
 		save_slot_3.text = "Save Slot 3 - " + date_time
 		save_slot_3.disabled = false
@@ -62,18 +62,18 @@ func _input(event):
 			_on_back_button_pressed()
 
 func _on_save_slot_1_pressed():
-	SaveSystem.load_game(1)
+	SaveManager.load_game(1)
 	hide()
 
 func _on_save_slot_2_pressed():
-	SaveSystem.load_game(2)
+	SaveManager.load_game(2)
 	hide()
 
 func _on_save_slot_3_pressed():
-	SaveSystem.load_game(3)
+	SaveManager.load_game(3)
 	hide()
 
 func _on_back_button_pressed():
 	hide()
 	# Return to the start menu
-	get_tree().change_scene_to_file("res://ui/start_menu.tscn")
+	get_tree().change_scene_to_file("res://ui/start_menu/start_menu.tscn")

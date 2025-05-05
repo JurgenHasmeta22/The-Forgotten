@@ -16,7 +16,6 @@ extends StaticBody3D
 @export var is_bonfire: bool = true  # Whether this spawn site acts as a bonfire (save point)
 @export var bonfire_id: String = ""  # Unique identifier for this bonfire
 
-
 func _ready():
 	add_to_group("interactable")
 	collision_layer = 9
@@ -34,7 +33,7 @@ func activate(player: CharacterBody3D):
 		print("Activating bonfire at position: " + str(bonfire_pos) + ", ID: " + bonfire_id)
 
 		# Save this bonfire as the last one visited
-		SaveSystem.set_last_bonfire(bonfire_pos, bonfire_id)
+		SaveManager.set_last_bonfire(bonfire_pos, bonfire_id)
 
 		# Heal the player when they rest at a bonfire
 		if player.health_system:
@@ -53,7 +52,7 @@ func activate(player: CharacterBody3D):
 		await anim_player.animation_finished
 
 		# Auto-save the game AFTER animation finishes
-		SaveSystem.save_game()
+		SaveManager.save_game()
 
 		# Create a callback to position the player after the scene is reloaded
 		var position_player_callback = func():
@@ -98,7 +97,7 @@ func activate(player: CharacterBody3D):
 
 func respawn():
 	# This function is called when a player interacts with the bonfire
-	# For respawning after death, SaveSystem.respawn_at_last_bonfire() is used instead
+	# For respawning after death, SaveManager.respawn_at_last_bonfire() is used instead
 
 	if reset_level:
 		# Reset the level to respawn all enemies

@@ -5,10 +5,10 @@ extends Control
 func _ready():
 	# Hide the indicator initially
 	modulate.a = 0
-	
-	# Connect to SaveSystem signals
-	SaveSystem.save_started.connect(_on_save_started)
-	SaveSystem.save_completed.connect(_on_save_completed)
+
+	# Connect to SaveManager signals
+	SaveManager.save_started.connect(_on_save_started)
+	SaveManager.save_completed.connect(_on_save_completed)
 
 func _on_save_started():
 	# Show the saving animation

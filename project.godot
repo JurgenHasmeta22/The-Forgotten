@@ -24,7 +24,7 @@ buses/default_bus_layout="res://audio/default_bus_layout.tres"
 [autoload]
 
 GameManager="*res://core/game_manager/game_manager.gd"
-SaveSystem="*res://characters/player/save_system/save_system.gd"
+SaveManager="*res://core/save_manager/save_manager.gd"
 
 [display]
 

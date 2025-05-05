@@ -122,6 +122,9 @@ enum state {FREE, STATIC, CLIMB}
 signal changed_state(new_state: state)
 
 func _ready():
+	# Add player to the Persist group for saving
+	add_to_group("Persist")
+
 	# Reset death state on scene load
 	is_dead = false
 
@@ -656,3 +659,43 @@ func _on_stamina_restored():
 	# Called when stamina is fully restored
 	# You can add visual or audio feedback here
 	pass
+
+# Save method to be called by the SaveManager
+func save():
+	var save_dict = {
+		"filename": get_scene_file_path(),
+		"parent": get_parent().get_path(),
+		"pos_x": global_position.x,
+		"pos_y": global_position.y,
+		"pos_z": global_position.z,
+		"rotation": global_rotation.y,
+		"is_player": true,  # Flag to identify this as the player
+
+		# Health and stamina
+		"health": health_system.current_health if health_system else 0,
+		"max_health": health_system.total_health if health_system else 0,
+		"stamina": stamina_system.current_stamina if stamina_system else 0,
+		"max_stamina": stamina_system.total_stamina if stamina_system else 0,
+
+		# Inventory items
+		"inventory": _get_inventory_data(),
+
+		# Add any other player properties you want to save
+		"level": 1,  # Replace with actual player level if you have one
+		"playtime": 0,  # Replace with actual playtime tracking if you have it
+	}
+
+	return save_dict
+
+# Helper method to get inventory data
+func _get_inventory_data():
+	var inventory_data = []
+
+	if inventory_system:
+		for item in inventory_system.inventory:
+			inventory_data.append({
+				"name": item.item_name,
+				"count": item.count
+			})
+
+	return inventory_data

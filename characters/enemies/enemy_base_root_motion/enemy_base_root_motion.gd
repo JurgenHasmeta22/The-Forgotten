@@ -50,6 +50,9 @@ func _ready():
 	# Reset death state on scene load
 	is_dead = false
 
+	# Add enemy to the Persist group for saving
+	add_to_group("Persist")
+
 	if animation_tree:
 		animation_tree.animation_measured.connect(_on_animation_measured)
 
@@ -251,3 +254,42 @@ func apply_ragdoll():
 
 func _on_animation_measured(_new_length):
 	anim_length = _new_length - .05 # offset slightly for the process frame
+
+# Helper method to check if a variable exists
+func has_variable(var_name: String) -> bool:
+	return var_name in self
+
+# Save method to be called by the SaveManager
+func save():
+	var save_dict = {
+		"filename": scene_file_path,
+		"parent": get_parent().get_path(),
+		"pos_x": global_position.x,
+		"pos_y": global_position.y,
+		"pos_z": global_position.z,
+		"rotation": global_rotation.y,
+
+		# Health
+		"health": health_system.current_health if health_system else 0,
+		"max_health": health_system.total_health if health_system else 0,
+
+		# Enemy state
+		"is_alive": !is_dead,
+		"aggro_state": current_state,
+	}
+
+	# Add target position if target is valid
+	if is_instance_valid(target):
+		save_dict["target_position"] = {
+			"x": target.global_position.x,
+			"y": target.global_position.y,
+			"z": target.global_position.z
+		}
+	else:
+		save_dict["target_position"] = null
+
+	# Add other properties
+	save_dict["enemy_type"] = group_name
+	save_dict["level"] = 1  # Replace with actual enemy level if you have one
+
+	return save_dict

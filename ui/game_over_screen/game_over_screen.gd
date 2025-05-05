@@ -27,7 +27,7 @@ func mute_gameplay_sounds():
 	var master_idx = AudioServer.get_bus_index("Master")
 
 	# Store the current volume to restore later if needed
-	var current_volume = AudioServer.get_bus_volume_db(master_idx)
+	var _current_volume = AudioServer.get_bus_volume_db(master_idx)
 
 	# Mute the master bus (affects all sounds)
 	AudioServer.set_bus_mute(master_idx, true)
@@ -54,13 +54,13 @@ func _on_respawn_button_pressed():
 	get_tree().paused = false
 
 	# Respawn at the last bonfire
-	if SaveSystem.last_bonfire_scene.is_empty():
+	if SaveManager.last_bonfire_scene.is_empty():
 		# If no bonfire has been visited, just reload the current scene
 		get_tree().reload_current_scene()
 	else:
 		# Respawn at the last bonfire - this will reset the level AND place you at the last bonfire
-		print("Respawning at last bonfire: " + SaveSystem.last_bonfire_id)
-		SaveSystem.respawn_at_last_bonfire()
+		print("Respawning at last bonfire: " + SaveManager.last_bonfire_id)
+		SaveManager.respawn_at_last_bonfire()
 
 # Unmute all gameplay sounds
 func unmute_gameplay_sounds():

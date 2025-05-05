@@ -9,15 +9,15 @@ func _ready():
 	get_tree().paused = false
 
 	# Check if there's a save file to enable/disable continue button
-	if SaveSystem.save_exists():
+	if SaveManager.save_exists():
 		continue_button.disabled = false
 	else:
 		continue_button.disabled = true
 
 	# Check if there are any save files to enable/disable load game button
 	var has_any_saves = false
-	for i in range(1, SaveSystem.MAX_SAVE_SLOTS + 1):
-		if SaveSystem.save_exists(i):
+	for i in range(1, SaveManager.MAX_SAVE_SLOTS + 1):
+		if SaveManager.save_exists(i):
 			has_any_saves = true
 			break
 
@@ -41,7 +41,7 @@ func _input(event):
 func _on_continue_button_pressed():
 	# Load the most recent save
 	print("Loading most recent save...")
-	SaveSystem.load_game()
+	GameManager.load_game()
 
 	# This will load the saved scene and position the player at their saved location
 
@@ -51,4 +51,4 @@ func _on_new_game_button_pressed():
 
 func _on_load_game_button_pressed():
 	# Show the load game menu
-	get_tree().change_scene_to_file("res://ui/load_game_menu.tscn")
+	get_tree().change_scene_to_file("res://ui/load_game_menu/load_game_menu.tscn")

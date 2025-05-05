@@ -1,0 +1,57 @@
+# This file contains the save method for the player character
+# IMPORTANT: This is NOT a standalone script. It's a reference for code to add to your player script.
+# DO NOT use this file directly - copy the code below into your player script.
+
+# =====================================================================
+# COPY THE CODE BELOW INTO YOUR PLAYER SCRIPT
+# =====================================================================
+
+# Add this to your player script's _ready() function:
+# func _ready():
+#     add_to_group("Persist")
+#     # ... your existing code ...
+
+# Add this method to your player script:
+# Save method to be called by the SaveManager
+func save():
+	var save_dict = {
+		"filename": get_scene_file_path(),
+		"parent": get_parent().get_path(),
+		"pos_x": global_position.x,
+		"pos_y": global_position.y,
+		"pos_z": global_position.z,
+		"rotation": global_rotation.y,
+		"is_player": true,  # Flag to identify this as the player
+
+		# Health and stamina
+		"health": health_system.current_health if health_system else 0,
+		"max_health": health_system.total_health if health_system else 0,
+		"stamina": stamina_system.current_stamina if stamina_system else 0,
+		"max_stamina": stamina_system.total_stamina if stamina_system else 0,
+
+		# Inventory items
+		"inventory": _get_inventory_data(),
+
+		# Add any other player properties you want to save
+		"level": 1,  # Replace with actual player level if you have one
+		"playtime": 0,  # Replace with actual playtime tracking if you have it
+	}
+
+	return save_dict
+
+# Add this helper method to your player script:
+func _get_inventory_data():
+	var inventory_data = []
+
+	if inventory_system:
+		for item in inventory_system.inventory:
+			inventory_data.append({
+				"name": item.item_name,
+				"count": item.count
+			})
+
+	return inventory_data
+
+# =====================================================================
+# END OF CODE TO COPY
+# =====================================================================
