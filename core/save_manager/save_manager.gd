@@ -116,6 +116,19 @@ func save_game(slot: int = current_save_slot) -> bool:
 		push_warning("SaveManager: Saving game with incomplete bonfire data. This may cause issues with respawning.")
 		print("SaveManager: Bonfire data - Position: " + str(last_bonfire_position) + ", ID: " + last_bonfire_id + ", Scene: " + last_bonfire_scene)
 
+		# Try to find a valid bonfire in the current scene
+		var bonfires = get_tree().get_nodes_in_group("interactable")
+		for bonfire in bonfires:
+			if bonfire.has_method("get_bonfire_id"):
+				var bonfire_id = bonfire.get_bonfire_id()
+				if !bonfire_id.is_empty():
+					print("SaveManager: Found valid bonfire with ID: " + bonfire_id + ", using it for save")
+					last_bonfire_id = bonfire_id
+					last_bonfire_position = bonfire.global_position
+					last_bonfire_scene = get_tree().current_scene.scene_file_path
+					_save_config()
+					break
+
 	# Log the bonfire information being saved
 	print("Saving game with bonfire data:")
 	print("- Position: " + str(last_bonfire_position))
@@ -417,11 +430,11 @@ func load_game(slot: int = current_save_slot) -> bool:
 			for bonfire in bonfires:
 				# Check if this is the bonfire we want to respawn at
 				if bonfire.has_method("get_bonfire_id"):
-					var bonfire_id = bonfire.get_bonfire_id()
-					print("SaveManager: Checking bonfire with ID: " + bonfire_id)
+					var found_bonfire_id = bonfire.get_bonfire_id()
+					print("SaveManager: Checking bonfire with ID: " + found_bonfire_id + " against " + last_bonfire_id)
 
-					if bonfire_id == last_bonfire_id:
-						print("SaveManager: Found matching bonfire: " + bonfire_id)
+					if found_bonfire_id == last_bonfire_id:
+						print("SaveManager: Found matching bonfire: " + found_bonfire_id)
 						found_matching_bonfire = true
 
 						# Update the player position to match the exact bonfire position
@@ -701,6 +714,13 @@ func respawn_at_last_bonfire() -> void:
 
 	print("SaveManager: Respawning at bonfire: ID=" + last_bonfire_id + ", Position=" + str(last_bonfire_position) + ", Scene=" + last_bonfire_scene)
 
+	# Debug: Print all bonfire IDs in the current scene to help diagnose issues
+	var current_bonfires = get_tree().get_nodes_in_group("interactable")
+	print("SaveManager: Current scene has " + str(current_bonfires.size()) + " interactables")
+	for bonfire in current_bonfires:
+		if bonfire.has_method("get_bonfire_id"):
+			print("SaveManager: Found bonfire with ID: " + bonfire.get_bonfire_id() + " at position: " + str(bonfire.global_position))
+
 	# Store the position locally to avoid accessing freed objects
 	var respawn_position = last_bonfire_position
 	var respawn_scene = last_bonfire_scene
@@ -767,11 +787,11 @@ func respawn_at_last_bonfire() -> void:
 		for bonfire in bonfires:
 			# Check if this is the bonfire we want to respawn at
 			if bonfire.has_method("get_bonfire_id"):
-				var bonfire_id = bonfire.get_bonfire_id()
-				print("SaveManager: Checking bonfire with ID: " + bonfire_id)
+				var found_bonfire_id = bonfire.get_bonfire_id()
+				print("SaveManager: Checking bonfire with ID: " + found_bonfire_id + " against " + respawn_bonfire_id)
 
-				if bonfire_id == respawn_bonfire_id:
-					print("SaveManager: Found matching bonfire: " + bonfire_id)
+				if found_bonfire_id == respawn_bonfire_id:
+					print("SaveManager: Found matching bonfire: " + found_bonfire_id)
 					found_matching_bonfire = true
 
 					# Update the player position to match the exact bonfire position
@@ -815,5 +835,3 @@ func respawn_at_last_bonfire() -> void:
 		# If we're in the same scene, reload it to reset enemies
 		print("Reloading current scene")
 		get_tree().reload_current_scene()
-
-

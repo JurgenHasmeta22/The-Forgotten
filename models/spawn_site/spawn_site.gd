@@ -44,6 +44,12 @@ func activate(player: CharacterBody3D):
 		print("SpawnSite: Setting last bonfire - ID: " + bonfire_id + ", Position: " + str(bonfire_pos))
 		var scene_path = get_tree().current_scene.scene_file_path
 
+		# Ensure the bonfire ID is not empty
+		if bonfire_id.is_empty():
+			push_error("SpawnSite: Bonfire ID is empty! Generating a new one.")
+			bonfire_id = "bonfire_" + str(get_instance_id()) + "_" + str(global_position.x).substr(0, 4) + "_" + str(global_position.z).substr(0, 4)
+			print("SpawnSite: Generated new bonfire ID: " + bonfire_id)
+
 		# Save the bonfire data directly to the config file
 		SaveManager.last_bonfire_position = bonfire_pos
 		SaveManager.last_bonfire_id = bonfire_id
@@ -129,7 +135,16 @@ func respawn():
 	# This function is called when a player interacts with the bonfire
 	# For respawning after death, SaveManager.respawn_at_last_bonfire() is used instead
 
-	# Make sure the bonfire data is saved to the config file one last time
+	# We need to make sure the current bonfire ID is saved as the last bonfire
+	# This is critical for ensuring we respawn at the correct bonfire
+	print("SpawnSite: Respawning at bonfire ID: " + bonfire_id)
+
+	# Force update the SaveManager with this bonfire's data
+	SaveManager.last_bonfire_id = bonfire_id
+	SaveManager.last_bonfire_position = global_position
+	SaveManager.last_bonfire_scene = get_tree().current_scene.scene_file_path
+
+	# Save the config to ensure this data persists
 	SaveManager._save_config()
 
 	# Print the current bonfire data for debugging
@@ -139,9 +154,9 @@ func respawn():
 	print("  - Scene: " + SaveManager.last_bonfire_scene)
 
 	if reset_level:
-		# Reset the level to respawn all enemies
-		# This is the Dark Souls behavior - reset the world when resting at a bonfire
-		get_tree().reload_current_scene()
+		# Instead of handling the respawn ourselves, use SaveManager's respawn function
+		# This ensures consistent behavior between resting at a bonfire and respawning after death
+		SaveManager.respawn_at_last_bonfire()
 	else:
 		# This branch is used if you want to keep the world state when resting at a bonfire
 		if spawn_scene:

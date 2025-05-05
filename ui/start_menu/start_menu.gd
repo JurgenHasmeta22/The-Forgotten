@@ -61,16 +61,16 @@ func _on_continue_button_pressed():
 	# Check if the save exists before trying to load it
 	if SaveManager.save_exists(current_slot):
 		print("StartMenu: Valid save found in slot " + str(current_slot))
-		# Use direct scene loading to the prison level
-		GameManager.change_scene_with_loading("res://levels/prison/prison.tscn")
+		# Use GameManager to load the save
+		GameManager.load_game(current_slot)
 	else:
 		push_error("StartMenu: No save file exists in slot " + str(current_slot))
 		# Try to find any valid save slot
 		for i in range(1, SaveManager.MAX_SAVE_SLOTS + 1):
 			if SaveManager.save_exists(i):
 				print("StartMenu: Found valid save in slot " + str(i))
-				# Use direct scene loading to the prison level
-				GameManager.change_scene_with_loading("res://levels/prison/prison.tscn")
+				# Use GameManager to load the save
+				GameManager.load_game(i)
 				return
 
 		# If we get here, no valid saves were found
