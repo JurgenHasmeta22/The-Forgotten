@@ -283,9 +283,11 @@ node_to_control = NodePath("../DoorObject2")
 
 [node name="SpawnSite" parent="Interactables" instance=ExtResource("9_cpxbt")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.07785, 9.53674e-07, 5.67158)
+bonfire_id = "bonfire_12345_10.5_20.7"
 
 [node name="SpawnSite2" parent="Interactables" instance=ExtResource("9_cpxbt")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.7883, 0.0526252, 19.1496)
+bonfire_id = "bonfire_67890_-5.2_15.3"
 
 [node name="Ladder3" parent="Interactables" instance=ExtResource("4_a4kod")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -65.4492, 0, 19.8901)

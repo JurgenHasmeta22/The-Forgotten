@@ -16,32 +16,43 @@ func _ready():
 	set_initial_focus()
 
 func update_save_slots():
+	print("LoadGameMenu: Updating save slots...")
+
 	# Update save slot 1
-	if SaveManager.save_exists(1):
+	var slot1_exists = SaveManager.save_exists(1)
+	print("LoadGameMenu: Save slot 1 exists: " + str(slot1_exists))
+	if slot1_exists:
 		var save_info = SaveManager.get_save_info(1)
 		var date_time = Time.get_datetime_string_from_unix_time(save_info.get("timestamp", 0))
 		save_slot_1.text = "Save Slot 1 - " + date_time
 		save_slot_1.disabled = false
+		print("LoadGameMenu: Save slot 1 has timestamp: " + date_time)
 	else:
 		save_slot_1.text = "Save Slot 1 - Empty"
 		save_slot_1.disabled = true
 
 	# Update save slot 2
-	if SaveManager.save_exists(2):
+	var slot2_exists = SaveManager.save_exists(2)
+	print("LoadGameMenu: Save slot 2 exists: " + str(slot2_exists))
+	if slot2_exists:
 		var save_info = SaveManager.get_save_info(2)
 		var date_time = Time.get_datetime_string_from_unix_time(save_info.get("timestamp", 0))
 		save_slot_2.text = "Save Slot 2 - " + date_time
 		save_slot_2.disabled = false
+		print("LoadGameMenu: Save slot 2 has timestamp: " + date_time)
 	else:
 		save_slot_2.text = "Save Slot 2 - Empty"
 		save_slot_2.disabled = true
 
 	# Update save slot 3
-	if SaveManager.save_exists(3):
+	var slot3_exists = SaveManager.save_exists(3)
+	print("LoadGameMenu: Save slot 3 exists: " + str(slot3_exists))
+	if slot3_exists:
 		var save_info = SaveManager.get_save_info(3)
 		var date_time = Time.get_datetime_string_from_unix_time(save_info.get("timestamp", 0))
 		save_slot_3.text = "Save Slot 3 - " + date_time
 		save_slot_3.disabled = false
+		print("LoadGameMenu: Save slot 3 has timestamp: " + date_time)
 	else:
 		save_slot_3.text = "Save Slot 3 - Empty"
 		save_slot_3.disabled = true

@@ -24,10 +24,24 @@ var last_bonfire_scene = ""
 var last_bonfire_id = "" # Unique identifier for the last bonfire used
 
 func _ready():
+	print("SaveManager: Initializing...")
+
 	# Create the saves directory if it doesn't exist
 	var dir = DirAccess.open("user://")
-	if not dir.dir_exists(SAVE_DIR):
-		dir.make_dir(SAVE_DIR)
+	if dir == null:
+		push_error("SaveManager: Failed to open user:// directory")
+	else:
+		print("SaveManager: Successfully opened user:// directory")
+
+		if not dir.dir_exists(SAVE_DIR.trim_suffix("/")):
+			print("SaveManager: Creating saves directory at " + SAVE_DIR)
+			var err = dir.make_dir(SAVE_DIR.trim_suffix("/"))
+			if err != OK:
+				push_error("SaveManager: Failed to create saves directory: " + str(err))
+			else:
+				print("SaveManager: Successfully created saves directory")
+		else:
+			print("SaveManager: Saves directory already exists")
 
 	# Try to load the last used save slot from a config file
 	_load_config()
@@ -41,18 +55,52 @@ func _load_config() -> void:
 		var config = ConfigFile.new()
 		var err = config.load(config_path)
 		if err == OK:
+			# Load the last used slot
 			current_save_slot = config.get_value("save", "last_slot", 1)
-			print("Loaded last save slot: " + str(current_save_slot))
+			print("SaveManager: Loaded last save slot: " + str(current_save_slot))
+
+			# Load the last bonfire data
+			if config.has_section("bonfire"):
+				last_bonfire_position.x = config.get_value("bonfire", "position_x", 0.0)
+				last_bonfire_position.y = config.get_value("bonfire", "position_y", 0.0)
+				last_bonfire_position.z = config.get_value("bonfire", "position_z", 0.0)
+				last_bonfire_id = config.get_value("bonfire", "id", "")
+				last_bonfire_scene = config.get_value("bonfire", "scene", "")
+
+				print("SaveManager: Loaded bonfire data from config:")
+				print("  - Position: " + str(last_bonfire_position))
+				print("  - ID: " + last_bonfire_id)
+				print("  - Scene: " + last_bonfire_scene)
+		else:
+			push_error("SaveManager: Failed to load config file: " + str(err))
 
 # Save configuration settings
 func _save_config() -> void:
 	var config = ConfigFile.new()
+
+	# Save the last used slot
 	config.set_value("save", "last_slot", current_save_slot)
-	config.save("user://save_config.cfg")
+
+	# Save the last bonfire data
+	config.set_value("bonfire", "position_x", last_bonfire_position.x)
+	config.set_value("bonfire", "position_y", last_bonfire_position.y)
+	config.set_value("bonfire", "position_z", last_bonfire_position.z)
+	config.set_value("bonfire", "id", last_bonfire_id)
+	config.set_value("bonfire", "scene", last_bonfire_scene)
+
+	# Save the config file
+	var err = config.save("user://save_config.cfg")
+	if err != OK:
+		push_error("SaveManager: Failed to save config file: " + str(err))
+	else:
+		print("SaveManager: Config saved successfully")
 
 # Save the current game state to the specified slot
 func save_game(slot: int = current_save_slot) -> bool:
+	print("SaveManager: Attempting to save game to slot " + str(slot))
+
 	if is_saving:
+		print("SaveManager: Already saving, ignoring request")
 		return false
 
 	is_saving = true
@@ -65,7 +113,8 @@ func save_game(slot: int = current_save_slot) -> bool:
 
 	# Make sure we have valid bonfire data
 	if last_bonfire_position == Vector3.ZERO or last_bonfire_id.is_empty() or last_bonfire_scene.is_empty():
-		push_warning("Saving game with incomplete bonfire data. This may cause issues with respawning.")
+		push_warning("SaveManager: Saving game with incomplete bonfire data. This may cause issues with respawning.")
+		print("SaveManager: Bonfire data - Position: " + str(last_bonfire_position) + ", ID: " + last_bonfire_id + ", Scene: " + last_bonfire_scene)
 
 	# Log the bonfire information being saved
 	print("Saving game with bonfire data:")
@@ -114,8 +163,24 @@ func save_game(slot: int = current_save_slot) -> bool:
 	var save_path = SAVE_DIR + "slot_" + str(slot) + SAVE_FILE_EXTENSION
 
 	# Make sure the save directory exists
-	DirAccess.make_dir_recursive_absolute(SAVE_DIR)
+	print("SaveManager: Ensuring save directory exists at " + SAVE_DIR)
+	var dir = DirAccess.open("user://")
+	if dir == null:
+		push_error("SaveManager: Failed to open user:// directory")
+		is_saving = false
+		save_icon_hidden.emit()
+		return false
 
+	if not dir.dir_exists(SAVE_DIR.trim_suffix("/")):
+		print("SaveManager: Creating saves directory")
+		var err = dir.make_dir(SAVE_DIR.trim_suffix("/"))
+		if err != OK:
+			push_error("SaveManager: Failed to create saves directory: " + str(err))
+			is_saving = false
+			save_icon_hidden.emit()
+			return false
+
+	print("SaveManager: Opening file for writing: " + save_path)
 	var save_file = FileAccess.open(save_path, FileAccess.WRITE)
 
 	if save_file == null:
@@ -135,6 +200,16 @@ func save_game(slot: int = current_save_slot) -> bool:
 	is_saving = false
 	save_completed.emit()
 	save_icon_hidden.emit()
+
+	# Verify the save file was created
+	# Reuse the same save_path from above
+	if FileAccess.file_exists(save_path):
+		print("SaveManager: Save successful! File created at: " + save_path)
+		# Check if the save is now visible to the system
+		print("SaveManager: save_exists(" + str(slot) + ") returns: " + str(save_exists(slot)))
+	else:
+		push_error("SaveManager: Save failed! File not found at: " + save_path)
+
 	return true
 
 # Load a game from the specified slot
@@ -222,7 +297,7 @@ func load_game(slot: int = current_save_slot) -> bool:
 		if player:
 			# Position the player at the last bonfire
 			player.global_position = last_bonfire_position
-			print("Positioned player at last bonfire: " + str(last_bonfire_position))
+			print("SaveManager: Positioned player at last bonfire: " + str(last_bonfire_position))
 
 			# Reset player health and stamina
 			if player.health_system:
@@ -232,8 +307,35 @@ func load_game(slot: int = current_save_slot) -> bool:
 			if player.stamina_system:
 				player.stamina_system.current_stamina = player.stamina_system.total_stamina
 				player.stamina_system.stamina_updated.emit(player.stamina_system.current_stamina)
+
+			# Find all bonfires in the scene to check if we can find the exact bonfire
+			var bonfires = get_tree().get_nodes_in_group("interactable")
+			var found_matching_bonfire = false
+
+			print("SaveManager: Looking for bonfire with ID: " + last_bonfire_id)
+			print("SaveManager: Found " + str(bonfires.size()) + " interactables in the scene")
+
+			for bonfire in bonfires:
+				# Check if this is the bonfire we want to respawn at
+				if bonfire.has_method("get_bonfire_id"):
+					var bonfire_id = bonfire.get_bonfire_id()
+					print("SaveManager: Checking bonfire with ID: " + bonfire_id)
+
+					if bonfire_id == last_bonfire_id:
+						print("SaveManager: Found matching bonfire: " + bonfire_id)
+						found_matching_bonfire = true
+
+						# Update the player position to match the exact bonfire position
+						player.global_position = bonfire.global_position
+						print("SaveManager: Updated player position to exact bonfire position: " + str(bonfire.global_position))
+						break
+				else:
+					print("SaveManager: Interactable doesn't have get_bonfire_id method: " + bonfire.name)
+
+			if !found_matching_bonfire:
+				push_warning("SaveManager: Could not find matching bonfire in scene, using saved position instead")
 		else:
-			push_error("Player not found after loading scene")
+			push_error("SaveManager: Player not found after loading scene")
 
 		# Now instantiate all saved nodes
 		if game_state.has("nodes"):
@@ -307,17 +409,71 @@ func load_game(slot: int = current_save_slot) -> bool:
 # Check if a save exists in the specified slot
 func save_exists(slot: int = current_save_slot) -> bool:
 	var save_path = SAVE_DIR + "slot_" + str(slot) + SAVE_FILE_EXTENSION
-	return FileAccess.file_exists(save_path)
+	var exists = FileAccess.file_exists(save_path)
+	print("SaveManager: Checking if save exists at " + save_path + ": " + str(exists))
+
+	# If it doesn't exist, let's check if the directory exists
+	if !exists:
+		var dir = DirAccess.open("user://")
+		if dir == null:
+			push_error("SaveManager: Failed to open user:// directory")
+		else:
+			print("SaveManager: user:// directory exists")
+
+			# Check if the saves directory exists
+			var dir_path = SAVE_DIR.trim_suffix("/")
+			if dir.dir_exists(dir_path):
+				print("SaveManager: " + dir_path + " directory exists")
+
+				# List all files in the saves directory
+				var save_dir = DirAccess.open("user://" + dir_path)
+				if save_dir == null:
+					push_error("SaveManager: Failed to open " + dir_path + " directory")
+				else:
+					print("SaveManager: Files in " + dir_path + ":")
+					save_dir.list_dir_begin()
+					var file_name = save_dir.get_next()
+					while file_name != "":
+						print("  - " + file_name)
+						file_name = save_dir.get_next()
+
+					# Try to create a test file to check write permissions
+					var test_path = SAVE_DIR + "test_write.tmp"
+					var test_file = FileAccess.open(test_path, FileAccess.WRITE)
+					if test_file == null:
+						push_error("SaveManager: Failed to create test file in " + SAVE_DIR)
+					else:
+						test_file.store_line("Test write")
+						print("SaveManager: Successfully created test file")
+
+						# Clean up the test file
+						var dir_test = DirAccess.open("user://")
+						if dir_test != null:
+							dir_test.remove(test_path)
+			else:
+				print("SaveManager: " + dir_path + " directory does not exist")
+
+				# Try to create the directory
+				var err = dir.make_dir(dir_path)
+				if err != OK:
+					push_error("SaveManager: Failed to create " + dir_path + " directory: " + str(err))
+				else:
+					print("SaveManager: Successfully created " + dir_path + " directory")
+
+	return exists
 
 # Get save info for the specified slot (for displaying in the load menu)
 func get_save_info(slot: int) -> Dictionary:
 	var save_path = SAVE_DIR + "slot_" + str(slot) + SAVE_FILE_EXTENSION
+	print("SaveManager: Getting save info for slot " + str(slot) + " at path: " + save_path)
 
 	if not FileAccess.file_exists(save_path):
+		print("SaveManager: Save file does not exist at " + save_path)
 		return {}
 
 	var save_file = FileAccess.open(save_path, FileAccess.READ)
 	if save_file == null:
+		push_error("SaveManager: Failed to open save file: " + save_path)
 		return {}
 
 	var json_string = save_file.get_line()
@@ -325,14 +481,16 @@ func get_save_info(slot: int) -> Dictionary:
 	var parse_result = json.parse(json_string)
 
 	if parse_result != OK:
+		push_error("SaveManager: Failed to parse save file JSON: " + save_path)
 		return {}
 
 	var game_state = json.data
+	print("SaveManager: Successfully parsed save file JSON")
 
 	# Return a subset of the save data for display purposes
 	var info = {
-		"timestamp": game_state["timestamp"],
-		"scene": game_state["scene"],
+		"timestamp": game_state.get("timestamp", 0),
+		"scene": game_state.get("scene", ""),
 	}
 
 	# Try to find player data in the nodes
@@ -352,6 +510,7 @@ func get_save_info(slot: int) -> Dictionary:
 	if not info.has("playtime"):
 		info["playtime"] = 0
 
+	print("SaveManager: Save info - Timestamp: " + str(info.timestamp) + ", Scene: " + info.scene)
 	return info
 
 # Delete a save file
@@ -370,29 +529,46 @@ func delete_save(slot: int) -> bool:
 
 # Set the last bonfire position and scene (called when player interacts with a bonfire)
 func set_last_bonfire(position: Vector3, bonfire_id: String, scene: String = "") -> void:
-	# Only update if this is a different bonfire or first bonfire
-	if last_bonfire_id != bonfire_id or last_bonfire_id.is_empty():
-		last_bonfire_position = position
-		last_bonfire_id = bonfire_id
+	print("SaveManager: Setting last bonfire - Position: " + str(position) + ", ID: " + bonfire_id)
 
-		if scene.is_empty():
-			last_bonfire_scene = get_tree().current_scene.scene_file_path
-		else:
-			last_bonfire_scene = scene
+	# Always update the bonfire data to ensure it's correctly saved
+	last_bonfire_position = position
+	last_bonfire_id = bonfire_id
 
-		print("Bonfire set: ID=" + bonfire_id + ", Scene=" + last_bonfire_scene)
+	if scene.is_empty():
+		last_bonfire_scene = get_tree().current_scene.scene_file_path
+	else:
+		last_bonfire_scene = scene
+
+	print("SaveManager: Bonfire set: ID=" + bonfire_id + ", Scene=" + last_bonfire_scene)
+
+	# Save the config to ensure this data persists even without a full save
+	_save_config()
+
+	# Double-check that the config was saved correctly by reloading it
+	_load_config()
+
+	# Verify the data was saved correctly
+	print("SaveManager: Verifying bonfire data after save:")
+	print("  - Position: " + str(last_bonfire_position))
+	print("  - ID: " + last_bonfire_id)
+	print("  - Scene: " + last_bonfire_scene)
 
 # Respawn the player at the last bonfire
 func respawn_at_last_bonfire() -> void:
-	if last_bonfire_scene.is_empty() or last_bonfire_position == Vector3.ZERO:
+	# Make sure we have the latest bonfire data from the config file
+	_load_config()
+
+	if last_bonfire_scene.is_empty() or last_bonfire_position == Vector3.ZERO or last_bonfire_id.is_empty():
 		push_error("No valid bonfire data for respawn")
 		return
 
-	print("Respawning at bonfire: ID=" + last_bonfire_id + ", Position=" + str(last_bonfire_position))
+	print("SaveManager: Respawning at bonfire: ID=" + last_bonfire_id + ", Position=" + str(last_bonfire_position) + ", Scene=" + last_bonfire_scene)
 
 	# Store the position locally to avoid accessing freed objects
 	var respawn_position = last_bonfire_position
 	var respawn_scene = last_bonfire_scene
+	var respawn_bonfire_id = last_bonfire_id
 
 	# Create a callback to position the player after the scene is loaded
 	var position_player_callback = func():
@@ -400,7 +576,7 @@ func respawn_at_last_bonfire() -> void:
 		await get_tree().process_frame
 		await get_tree().create_timer(0.5).timeout
 
-		print("Scene loaded for respawn, looking for player...")
+		print("SaveManager: Scene loaded for respawn, looking for player...")
 
 		# Try to find the player with multiple attempts and increasing delays
 		var player = null
@@ -413,7 +589,7 @@ func respawn_at_last_bonfire() -> void:
 			if player:
 				# Position the player at the bonfire
 				player.global_position = respawn_position
-				print("Player positioned at bonfire: " + str(respawn_position))
+				print("SaveManager: Player positioned at bonfire: " + str(respawn_position))
 
 				# Reset player health and stamina
 				if player.health_system:
@@ -426,21 +602,39 @@ func respawn_at_last_bonfire() -> void:
 
 				break
 			else:
-				print("Player not found, attempt " + str(current_attempt) + " of " + str(max_attempts))
+				print("SaveManager: Player not found, attempt " + str(current_attempt) + " of " + str(max_attempts))
 				current_attempt += 1
 				await get_tree().create_timer(0.2 * current_attempt).timeout
 
 		if player == null:
-			push_error("Failed to find player after respawn")
+			push_error("SaveManager: Failed to find player after respawn")
 
 		# Find all bonfires in the scene
 		var bonfires = get_tree().get_nodes_in_group("interactable")
+		var found_matching_bonfire = false
+
+		print("SaveManager: Looking for bonfire with ID: " + respawn_bonfire_id)
+		print("SaveManager: Found " + str(bonfires.size()) + " interactables in the scene")
+
 		for bonfire in bonfires:
 			# Check if this is the bonfire we want to respawn at
-			if bonfire.has_method("get_bonfire_id") and bonfire.get_bonfire_id() == last_bonfire_id:
-				print("Found matching bonfire: " + bonfire.get_bonfire_id())
-				# The bonfire is already in the scene, no need to do anything else
-				break
+			if bonfire.has_method("get_bonfire_id"):
+				var bonfire_id = bonfire.get_bonfire_id()
+				print("SaveManager: Checking bonfire with ID: " + bonfire_id)
+
+				if bonfire_id == respawn_bonfire_id:
+					print("SaveManager: Found matching bonfire: " + bonfire_id)
+					found_matching_bonfire = true
+
+					# Update the player position to match the exact bonfire position
+					player.global_position = bonfire.global_position
+					print("SaveManager: Updated player position to exact bonfire position: " + str(bonfire.global_position))
+					break
+			else:
+				print("SaveManager: Interactable doesn't have get_bonfire_id method: " + bonfire.name)
+
+		if !found_matching_bonfire:
+			push_warning("SaveManager: Could not find matching bonfire in scene, using saved position instead")
 
 	# Connect to the tree_changed signal to detect when the scene is loaded
 	get_tree().tree_changed.connect(position_player_callback, CONNECT_ONE_SHOT)

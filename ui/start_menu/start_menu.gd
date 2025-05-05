@@ -8,19 +8,23 @@ func _ready():
 	# Ensure the game is not paused when the start menu is shown
 	get_tree().paused = false
 
+	print("StartMenu: Checking for save files...")
+
 	# Check if there's a save file to enable/disable continue button
-	if SaveManager.save_exists():
-		continue_button.disabled = false
-	else:
-		continue_button.disabled = true
+	var has_current_save = SaveManager.save_exists()
+	print("StartMenu: Current save exists: " + str(has_current_save))
+	continue_button.disabled = !has_current_save
 
 	# Check if there are any save files to enable/disable load game button
 	var has_any_saves = false
 	for i in range(1, SaveManager.MAX_SAVE_SLOTS + 1):
-		if SaveManager.save_exists(i):
+		var slot_has_save = SaveManager.save_exists(i)
+		print("StartMenu: Save slot " + str(i) + " exists: " + str(slot_has_save))
+		if slot_has_save:
 			has_any_saves = true
 			break
 
+	print("StartMenu: Any saves exist: " + str(has_any_saves))
 	load_game_button.disabled = !has_any_saves
 
 	# Set focus to the appropriate button

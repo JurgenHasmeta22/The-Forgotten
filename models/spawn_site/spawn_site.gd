@@ -24,6 +24,7 @@ func _ready():
 	if bonfire_id.is_empty():
 		# Use the position as part of the ID to make it unique
 		bonfire_id = "bonfire_" + str(get_instance_id()) + "_" + str(global_position.x).substr(0, 4) + "_" + str(global_position.z).substr(0, 4)
+		print("Generated bonfire ID: " + bonfire_id + " at position: " + str(global_position))
 
 # Return the bonfire ID for use by the SaveManager
 func get_bonfire_id() -> String:
@@ -37,7 +38,9 @@ func activate(player: CharacterBody3D):
 		print("Activating bonfire at position: " + str(bonfire_pos) + ", ID: " + bonfire_id)
 
 		# Save this bonfire as the last one visited
-		SaveManager.set_last_bonfire(bonfire_pos, bonfire_id)
+		print("SpawnSite: Setting last bonfire - ID: " + bonfire_id + ", Position: " + str(bonfire_pos))
+		var scene_path = get_tree().current_scene.scene_file_path
+		SaveManager.set_last_bonfire(bonfire_pos, bonfire_id, scene_path)
 
 		# Heal the player when they rest at a bonfire
 		if player.health_system:
@@ -55,8 +58,14 @@ func activate(player: CharacterBody3D):
 		# Wait for animation to finish
 		await anim_player.animation_finished
 
+		# Make sure the bonfire data is saved to the config file
+		print("SpawnSite: Ensuring bonfire data is saved to config")
+		SaveManager._save_config()
+
 		# Auto-save the game AFTER animation finishes
-		SaveManager.save_game()
+		print("SpawnSite: Saving game after bonfire interaction")
+		var save_success = await SaveManager.save_game()
+		print("SpawnSite: Save result: " + str(save_success))
 
 		# Create a callback to position the player after the scene is reloaded
 		var position_player_callback = func():

@@ -15,6 +15,14 @@ func _ready():
 	var root = get_tree().root
 	current_scene = root.get_child(root.get_child_count() - 1)
 
+	# Connect to SaveManager signals
+	SaveManager.load_completed.connect(_on_save_manager_load_completed)
+
+# Called when SaveManager completes loading a game
+func _on_save_manager_load_completed():
+	print("GameManager: Save loading completed")
+	game_loaded.emit()
+
 func _input(event):
 	if event.is_action_pressed("pause_game") and current_scene.name != "StartMenu":
 		toggle_pause()
@@ -61,19 +69,16 @@ func load_game(slot: int = 1):
 
 	# Check if the save exists
 	if not SaveManager.save_exists(slot):
-		push_error("No save file exists in slot " + str(slot))
+		push_error("GameManager: No save file exists in slot " + str(slot))
 		# Stay on current scene if load fails
 		return
 
-	print("Loading game from slot " + str(slot))
+	print("GameManager: Loading game from slot " + str(slot))
 
-	# Load the game using SaveManager
-	var success = SaveManager.load_game(slot)
+	# Start the loading process
+	# Note: We don't await here because SaveManager.load_game will handle the scene change
+	# and we want to return control to the caller immediately
+	SaveManager.load_game(slot)
 
-	if success:
-		game_loaded.emit()
-	else:
-		push_error("Failed to load game from slot " + str(slot))
-		# If loading fails, stay on current scene or go to start menu
-		if get_tree().current_scene.name != "StartMenu":
-			change_scene("res://ui/start_menu/start_menu.tscn")
+	# The load_completed signal from SaveManager will be emitted when loading is done
+	# We can connect to it if we need to do something after loading completes

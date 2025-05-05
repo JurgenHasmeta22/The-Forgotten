@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=4 uid="uid://dwi6wppkvd4nl"]
+[gd_scene load_steps=15 format=3 uid="uid://dwi6wppkvd4nl"]
 
 [ext_resource type="AudioStream" uid="uid://bd7r1x1qj66kq" path="res://audio/SoundFX/fire/fire_01_loop.wav" id="1_5cub6"]
 [ext_resource type="Script" uid="uid://dwjxu7aytqngy" path="res://utilities/torchlight.gd" id="1_um72q"]
