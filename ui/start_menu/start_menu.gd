@@ -18,21 +18,14 @@ func _ready():
 func refresh_save_buttons():
 	print("StartMenu: Checking for save files...")
 
-	# Check if there's a save file to enable/disable continue button
-	var has_current_save = SaveManager.save_exists()
-	print("StartMenu: Current save exists: " + str(has_current_save))
-	continue_button.disabled = !has_current_save
+	# Find the latest save slot
+	var latest_slot = SaveManager.get_latest_save_slot()
+	var has_any_saves = (latest_slot > 0)
 
-	# Check if there are any save files to enable/disable load game button
-	var has_any_saves = false
-	for i in range(1, SaveManager.MAX_SAVE_SLOTS + 1):
-		var slot_has_save = SaveManager.save_exists(i)
-		print("StartMenu: Save slot " + str(i) + " exists: " + str(slot_has_save))
-		if slot_has_save:
-			has_any_saves = true
-			break
+	# Enable/disable continue button based on if we have any saves
+	continue_button.disabled = !has_any_saves
 
-	print("StartMenu: Any saves exist: " + str(has_any_saves))
+	# Enable/disable load game button based on if we have any saves
 	load_game_button.disabled = !has_any_saves
 
 	# Set focus to the appropriate button
@@ -54,45 +47,25 @@ func _on_continue_button_pressed():
 	# Load the most recent save
 	print("StartMenu: Loading most recent save...")
 
-	# Make sure we're using the current save slot
-	var current_slot = SaveManager.current_save_slot
-	print("StartMenu: Using save slot: " + str(current_slot))
+	# Find the latest save slot
+	var latest_slot = SaveManager.get_latest_save_slot()
 
-	# Check if the save exists before trying to load it
-	if SaveManager.save_exists(current_slot):
-		print("StartMenu: Valid save found in slot " + str(current_slot))
+	if latest_slot > 0:
 		# Use SaveManager directly to load the save
-		var load_success = SaveManager.load_game(current_slot)
+		var load_success = SaveManager.load_game(latest_slot)
+
 		if !load_success:
-			push_error("StartMenu: Failed to load save from slot " + str(current_slot))
+			push_error("StartMenu: Failed to load save from slot " + str(latest_slot))
 			# If loading fails, start a new game instead
-			print("StartMenu: Starting new game instead")
 			_on_new_game_button_pressed()
 	else:
-		push_error("StartMenu: No save file exists in slot " + str(current_slot))
-		# Try to find any valid save slot
-		var found_valid_save = false
-		for i in range(1, SaveManager.MAX_SAVE_SLOTS + 1):
-			if SaveManager.save_exists(i):
-				print("StartMenu: Found valid save in slot " + str(i))
-				found_valid_save = true
-				# Use SaveManager directly to load the save
-				var load_success = SaveManager.load_game(i)
-				if load_success:
-					return
-				else:
-					push_error("StartMenu: Failed to load save from slot " + str(i))
-
-		# If we get here, no valid saves were found or loading failed
-		if !found_valid_save:
-			push_error("StartMenu: No valid save files found")
-			# Start a new game instead
-			print("StartMenu: Starting new game instead")
-			_on_new_game_button_pressed()
+		push_error("StartMenu: No valid save files found")
+		# Start a new game instead
+		_on_new_game_button_pressed()
 
 func _on_new_game_button_pressed():
-	# Start a new game
-	GameManager.change_scene_with_loading("res://levels/prison/prison.tscn")
+	# Start a new game using SaveManager
+	SaveManager.new_game()
 
 func _on_load_game_button_pressed():
 	# Show the load game menu

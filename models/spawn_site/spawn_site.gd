@@ -38,8 +38,8 @@ func activate(player: CharacterBody3D):
 			push_error("SpawnSite: Bonfire ID is empty! Generating a new one.")
 			bonfire_id = "bonfire_" + str(get_instance_id()) + "_" + str(global_position.x).substr(0, 4) + "_" + str(global_position.z).substr(0, 4)
 
-		SaveManager.last_bonfire_id = bonfire_id
-		SaveManager.last_bonfire_scene = scene_path
+		# Use the proper function to set bonfire data
+		SaveManager.set_last_bonfire(bonfire_id, scene_path)
 
 		# Heal the player when they rest at a bonfire
 		if player.health_system:
@@ -62,7 +62,7 @@ func activate(player: CharacterBody3D):
 		SaveManager.save_icon_shown.emit()
 
 		# Save the game directly
-		var save_success = await SaveManager.save_game(SaveManager.current_save_slot)
+		var _save_success = SaveManager.save_at_bonfire()
 
 		# Make sure the save icon is hidden
 		SaveManager.save_icon_hidden.emit()
@@ -119,9 +119,8 @@ func position_player_at_bonfire():
 		player.stamina_system.stamina_updated.emit(player.stamina_system.current_stamina)
 
 func respawn():
-	# Update the SaveManager with this bonfire's data
-	SaveManager.last_bonfire_id = bonfire_id
-	SaveManager.last_bonfire_scene = get_tree().current_scene.scene_file_path
+	# Update the SaveManager with this bonfire's data using the proper function
+	SaveManager.set_last_bonfire(bonfire_id, get_tree().current_scene.scene_file_path)
 
 	if reset_level:
 		# Reload the current scene to reset enemies
