@@ -47,6 +47,14 @@ var is_dead: bool = false
 
 
 func _ready():
+	# Generate a unique ID for this enemy based on its position and type
+	var enemy_id = group_name + "_" + str(get_instance_id()) + "_" + str(global_position.x).substr(0, 4) + "_" + str(global_position.z).substr(0, 4)
+
+	if SaveManager.is_enemy_defeated(enemy_id):
+		print("Enemy " + enemy_id + " was already defeated, removing from scene")
+		queue_free()
+		return
+
 	# Reset death state on scene load
 	is_dead = false
 
@@ -235,6 +243,11 @@ func death():
 		death_started.emit()
 		# Freeze the character in place
 		velocity = Vector3.ZERO
+
+	# Add this enemy to the defeated list in SaveManager
+	# Generate a unique ID for this enemy based on its position and type
+	var enemy_id = group_name + "_" + str(get_instance_id()) + "_" + str(global_position.x).substr(0, 4) + "_" + str(global_position.z).substr(0, 4)
+	SaveManager.add_defeated_enemy(enemy_id)
 
 	# Use a one-shot timer to queue_free
 	var free_timer = Timer.new()

@@ -7,6 +7,8 @@ signal load_started
 signal load_completed
 signal save_icon_shown
 signal save_icon_hidden
+signal enemy_defeated(enemy_id)
+signal door_opened(door_id)
 
 const SAVE_DIR = "user://saves/"
 const MAX_SAVE_SLOTS = 3
@@ -277,4 +279,58 @@ func set_last_bonfire(bonfire_id: String, scene: String = "") -> void:
 		last_bonfire_scene = get_tree().current_scene.scene_file_path
 	else:
 		last_bonfire_scene = scene
+# endregion
+
+# region "Game state tracking functions"
+func add_defeated_enemy(enemy_id: String) -> void:
+	if "game_state" not in data:
+		data["game_state"] = {
+			"enemies_defeated": [],
+			"items_collected": [],
+			"doors_opened": []
+		}
+
+	if "enemies_defeated" not in data["game_state"]:
+		data["game_state"]["enemies_defeated"] = []
+
+	if not enemy_id in data["game_state"]["enemies_defeated"]:
+		data["game_state"]["enemies_defeated"].append(enemy_id)
+		print("SaveManager: Added enemy " + enemy_id + " to defeated list")
+		enemy_defeated.emit(enemy_id)
+		save_game()
+
+func add_opened_door(door_id: String) -> void:
+	if "game_state" not in data:
+		data["game_state"] = {
+			"enemies_defeated": [],
+			"items_collected": [],
+			"doors_opened": []
+		}
+
+	if "doors_opened" not in data["game_state"]:
+		data["game_state"]["doors_opened"] = []
+
+	if not door_id in data["game_state"]["doors_opened"]:
+		data["game_state"]["doors_opened"].append(door_id)
+		print("SaveManager: Added door " + door_id + " to opened list")
+		door_opened.emit(door_id)
+		save_game()
+
+func is_enemy_defeated(enemy_id: String) -> bool:
+	if "game_state" not in data:
+		return false
+
+	if "enemies_defeated" not in data["game_state"]:
+		return false
+
+	return enemy_id in data["game_state"]["enemies_defeated"]
+
+func is_door_opened(door_id: String) -> bool:
+	if "game_state" not in data:
+		return false
+
+	if "doors_opened" not in data["game_state"]:
+		return false
+
+	return door_id in data["game_state"]["doors_opened"]
 # endregion

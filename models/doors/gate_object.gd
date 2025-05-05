@@ -6,48 +6,64 @@ extends StaticBody3D
 ## triggers the interact on the player while making any changes needed here.
 
 @onready var new_trans = global_transform
-@onready var opened :bool = false
-@export var locked : bool = false
+@onready var opened: bool = false
+@export var locked: bool = false
 signal gate_opened
 @onready var animation_player = $AnimationPlayer
-@export var open_delay :float = .7
+@export var open_delay: float = .7
+var gate_id: String = ""
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	add_to_group("interactable")
-	new_trans.origin = to_global(Vector3.FORWARD *.5)
+	new_trans.origin = to_global(Vector3.FORWARD * .5)
 	collision_layer = 9
-	
+
+	# Generate a unique ID for this gate based on its position
+	gate_id = "gate_" + str(get_instance_id()) + "_" + str(global_position.x).substr(0, 4) + "_" + str(global_position.z).substr(0, 4)
+
+	if SaveManager.is_door_opened(gate_id):
+		call_deferred("_deferred_open_gate")
+
+func _deferred_open_gate():
+	# Wait a frame to ensure the scene is fully loaded
+	await get_tree().process_frame
+
+	# Open the gate without animation
+	opened = true
+	animation_player.play("open")
+	animation_player.advance(animation_player.current_animation_length) # Skip to end of animation
+
 
 func activate(player: CharacterBody3D):
 	if locked:
 		shake_gate()
 		return
-		
+
 	if !opened:
 		opened = true
-		
-		
+
+
 		var dist_to_front = to_global(Vector3.FORWARD).distance_to(player.global_position)
 		var dist_to_back = to_global(Vector3.BACK).distance_to(player.global_position)
-		
+
 		var new_translation = global_transform
 		if dist_to_front > dist_to_back:
-			new_translation = global_transform.rotated_local(Vector3.UP,PI)
-		
-		new_translation = new_translation.translated_local(Vector3(0,player.global_position.y,-1))
-		
+			new_translation = global_transform.rotated_local(Vector3.UP, PI)
+
+		new_translation = new_translation.translated_local(Vector3(0, player.global_position.y, -1))
+
 		var tween = create_tween()
-		tween.tween_property(player,"global_transform", new_translation,.2)
+		tween.tween_property(player, "global_transform", new_translation, .2)
 		await tween.finished
-		
+
 		player.trigger_interact("GATE")
 		await get_tree().create_timer(open_delay).timeout
 		gate_opened.emit()
 		animation_player.play("open")
-		
-#
+
+		# Save the gate state
+		SaveManager.add_opened_door(gate_id)
+
 func shake_gate():
 	animation_player.play("locked")
-
-#
